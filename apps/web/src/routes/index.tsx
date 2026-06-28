@@ -1,12 +1,18 @@
+/* eslint-disable react-refresh/only-export-components */
+import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout, AuthLayout } from '@/layouts';
 import { NotFound, ErrorBoundary } from '@/components/error';
 import { ROUTES, PERMISSIONS } from '@/constants';
 import { AuthGuard } from './guards/AuthGuard';
 import { PermissionGuard } from './guards/PermissionGuard';
-import { UserList, UserForm, RoleMatrix } from '@/modules/user-roles';
-import { SettingsPage } from '@/modules/settings';
-import { EmployeeList } from '@/modules/masters/employees';
+
+// Lazy loaded modules
+const UserList = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.UserList })));
+const UserForm = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.UserForm })));
+const RoleMatrix = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.RoleMatrix })));
+const SettingsPage = lazy(() => import('@/modules/settings').then(m => ({ default: m.SettingsPage })));
+const EmployeeList = lazy(() => import('@/modules/masters/employees').then(m => ({ default: m.EmployeeList })));
 
 export const router = createBrowserRouter([
   {
