@@ -24,8 +24,8 @@ describe('userCreateSchema', () => {
     
     const result = userCreateSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Username must be at least 3 characters");
+    if (!result.success && result.error) {
+      expect(result.error.issues[0]?.message).toBe("Username must be at least 3 characters");
     }
   });
 
@@ -39,8 +39,8 @@ describe('userCreateSchema', () => {
     
     const result = userCreateSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Password must be at least 6 characters");
+    if (!result.success && result.error) {
+      expect(result.error.issues[0]?.message).toBe("Password must be at least 6 characters");
     }
   });
 });

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import type { SubmitHandler } from 'react-hook-form';
+import type { SubmitHandler, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserRole, UserStatus, userCreateSchema, userUpdateSchema } from '@frms/shared';
 import type { UserCreateInput, UserUpdateInput } from '@frms/shared';
@@ -18,13 +18,12 @@ export function UserForm() {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
 
-  const schema = isEditing ? userUpdateSchema : userCreateSchema;
-  interface FormData {
+  type FormData = {
     username: string;
     password?: string;
     role: UserRole;
     status: UserStatus;
-  }
+  };
 
   const {
     register,
@@ -32,8 +31,7 @@ export function UserForm() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    // @ts-expect-error - Zod conditional schema typing mismatch with react-hook-form
-    resolver: zodResolver(schema),
+    resolver: (isEditing ? zodResolver(userUpdateSchema) : zodResolver(userCreateSchema)) as unknown as Resolver<FormData>,
     defaultValues: {
       username: '',
       password: '',
