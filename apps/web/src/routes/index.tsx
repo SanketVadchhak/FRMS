@@ -6,6 +6,7 @@ import { AuthGuard } from './guards/AuthGuard';
 import { PermissionGuard } from './guards/PermissionGuard';
 import { UserList, UserForm, RoleMatrix } from '@/modules/user-roles';
 import { SettingsPage } from '@/modules/settings';
+import { EmployeeList } from '@/modules/masters/employees';
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,14 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <div>Dashboard Placeholder</div>,
+      },
+      {
+        path: ROUTES.MASTERS.EMPLOYEES,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.EMPLOYEES_READ}>
+            <EmployeeList />
+          </PermissionGuard>
+        ),
       },
       {
         path: ROUTES.USERS.LIST,
