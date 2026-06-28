@@ -1,0 +1,27 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@frms/shared": "*",
+    "fastify": "^4.26.2",
+    "@prisma/client": "^5.14.0",
+    "zod": "^3.23.8",
+    "pino": "^8.20.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.14.0",
+    "tsx": "^4.10.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Models - See docs/DATABASE.md for complete architecture and indexing strategy
+// -----------------------------------------------------------------------------
+
+model Employee {
+  id              String   @id @default(uuid())
+  name            String
+  mobile          String?
+  joiningDate     DateTime
+  hourlyRate      Decimal
+  status          String   @default("ACTIVE") // ACTIVE | INACTIVE
+  notes           String?
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  productionEntries ProductionEntry[]
+  salaryAdvances    SalaryAdvance[]
+  payrolls          Payroll[]
+
+  @@index([name])
+  @@index([status])
+}
+
+model Machine {
+  id        String   @id @default(uuid())
+  name      String
+  status    String   @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productionEntries ProductionEntry[]
+}
+
+model Design {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productionDetails ProductionDetail[]
+}
+
+model ProductionEntry {
+  id             String   @id @default(uuid())
+  date           DateTime @default(now())
+  employeeId     String
+  machineId      String
+  shift          String   // DAY | NIGHT
+  framesChanged  Int
+  threadBreakage Int
+  bonus          Decimal  @default(0)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  machine  Machine  @relation(fields: [machineId], references: [id])
+
+  details ProductionDetail[]
+
+  @@index([date])
+  @@index([employeeId])
+  @@index([machineId])
+  @@index([employeeId, date])
+  @@index([shift])
+}
+
+model ProductionDetail {
+  id                String   @id @default(uuid())
+  productionEntryId String
+  designId          String
+  stitchCount       Int
+  hoursWorked       Decimal
+  qualityCheck      String   // PASS | FAIL
+  createdAt         DateTime @default(now())
+
+  entry  ProductionEntry @relation(fields: [productionEntryId], references: [id])
+  design Design          @relation(fields: [designId], references: [id])
+
+  @@index([productionEntryId])
+  @@index([designId])
+}
+
+model SalaryAdvance {
+  id         String   @id @default(uuid())
+  employeeId String
+  amount     Decimal
+  date       DateTime
+  notes      String?
+  deducted   Boolean  @default(false)
+  payrollId  String?
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  payroll  Payroll? @relation(fields: [payrollId], references: [id])
+
+  @@index([employeeId])
+  @@index([deducted])
+}
+
+model Payroll {
+  id              String    @id @default(uuid())
+  employeeId      String
+  periodStart     DateTime
+  periodEnd       DateTime
+  basicWage       Decimal
+  bonus           Decimal
+  grossWage       Decimal
+  advanceDeducted Decimal
+  netPay          Decimal
+  paymentDate     DateTime?
+  paymentMethod   String?
+  status          String    @default("PENDING") // PENDING | PAID
+  locked          Boolean   @default(false)
+  lockedAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  employee Employee        @relation(fields: [employeeId], references: [id])
+  advances SalaryAdvance[]
+
+  @@index([employeeId])
+  @@index([employeeId, periodStart, periodEnd])
+  @@index([status])
+  @@index([locked])
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  passwordHash String
+  role         String    // ADMIN | SUPERVISOR | OPERATOR
+  status       String    @default("ACTIVE") // ACTIVE | INACTIVE
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([token])
+  @@index([userId])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  entity        String
+  entityId      String
+  action        String
+  userId        String
+  previousValue String?  // JSON serialized
+  newValue      String?  // JSON serialized
+  timestamp     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([action])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  severity  String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  userId    String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+model Settings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   // JSON serialized
+  updatedAt DateTime @updatedAt
+  updatedBy String
+
+  @@index([key])
+}
