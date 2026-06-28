@@ -9,12 +9,19 @@ import { useUser, useCreateUser, useUpdateUser } from '../hooks/useUsers';
 import { PageHeader, SectionCard, LoadingSpinner } from '@/components';
 import { ROUTES } from '@/constants';
 
-export function UserForm() {
-  const { id } = useParams<{ id: string }>();
-  const isEditing = !!id;
+interface UserFormProps {
+  id?: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export function UserForm({ id: propId, onSuccess, onCancel }: UserFormProps = {}) {
+  const { id: paramId } = useParams<{ id: string }>();
+  const currentId = propId || paramId;
+  const isEditing = !!currentId;
   const navigate = useNavigate();
 
-  const { data: user, isLoading: isFetching } = useUser(id);
+  const { data: user, isLoading: isFetching } = useUser(currentId);
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
 
@@ -54,11 +61,12 @@ export function UserForm() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       if (isEditing) {
-        await updateUser.mutateAsync({ id: id!, data: data as UserUpdateInput });
+        await updateUser.mutateAsync({ id: currentId!, data: data as UserUpdateInput });
       } else {
         await createUser.mutateAsync(data as UserCreateInput);
       }
-      navigate(ROUTES.USERS.LIST);
+      if (onSuccess) onSuccess();
+      else navigate(ROUTES.USERS.LIST);
     } catch (error) {
       console.error("Failed to save user", error);
       alert((error as Error).message || "An error occurred while saving.");
@@ -146,7 +154,7 @@ export function UserForm() {
           <div className="flex justify-end gap-4 border-t pt-6 mt-6">
             <button
               type="button"
-              onClick={() => navigate(ROUTES.USERS.LIST)}
+              onClick={() => onCancel ? onCancel() : navigate(ROUTES.USERS.LIST)}
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
             >
               Cancel
