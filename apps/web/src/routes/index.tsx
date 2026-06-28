@@ -5,6 +5,7 @@ import { ROUTES, PERMISSIONS } from '@/constants';
 import { AuthGuard } from './guards/AuthGuard';
 import { PermissionGuard } from './guards/PermissionGuard';
 import { UserList, UserForm, RoleMatrix } from '@/modules/user-roles';
+import { SettingsPage } from '@/modules/settings';
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,14 @@ export const router = createBrowserRouter([
         element: (
           <PermissionGuard permission={PERMISSIONS.USERS_MANAGE}>
             <RoleMatrix />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.SETTINGS,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.SETTINGS_READ}>
+            <SettingsPage />
           </PermissionGuard>
         ),
       },

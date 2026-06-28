@@ -10,5 +10,8 @@ export const QUERY_KEYS = {
     LIST: ['users', 'list'],
     DETAIL: (id: string) => ['users', 'detail', id],
   },
+  SETTINGS: {
+    COMPANY: ['settings', 'company'],
+  },
   // Add more as needed
 } as const;
