@@ -5,8 +5,8 @@ import {
   Banknote,
   FileText,
   Settings,
-  Users,
   ClipboardCheck,
+  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ROUTES } from './routes';
@@ -41,6 +41,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     permission: PERMISSIONS.PRODUCTION_APPROVE,
   },
   {
+    id: 'attendance',
+    label: 'Attendance',
+    path: ROUTES.ATTENDANCE.LIST,
+    icon: Users, // Using Users icon since we removed it from users&roles
+    permission: PERMISSIONS.EMPLOYEES_READ, // Using employees read permission for now, or production read
+  },
+  {
     id: 'workers',
     label: 'Workers',
     path: ROUTES.MASTERS.EMPLOYEES,
@@ -60,17 +67,11 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     path: ROUTES.REPORTS,
     icon: FileText,
   },
-  {
-    id: 'users',
-    label: 'Users & Roles',
-    path: ROUTES.USERS.LIST,
-    icon: Users,
-    permission: PERMISSIONS.USERS_MANAGE,
-  },
+
   {
     id: 'settings',
     label: 'Settings',
-    path: ROUTES.SETTINGS,
+    path: ROUTES.SETTINGS.ROOT,
     icon: Settings,
     permission: PERMISSIONS.SETTINGS_READ,
   },

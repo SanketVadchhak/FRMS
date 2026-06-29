@@ -84,7 +84,7 @@ export function UserForm({ id: propId, onSuccess, onCancel }: UserFormProps = {}
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <PageHeader 
-        title={isEditing ? 'Edit User' : 'Add New User'} 
+        title={isEditing ? 'Settings / Edit User' : 'Settings / Add New User'} 
         description={isEditing ? 'Modify user details and roles' : 'Create a new system user'}
       />
 

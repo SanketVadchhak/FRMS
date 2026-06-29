@@ -1,56 +1,41 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import { useState, useMemo } from 'react';
-import { Search, Factory, CheckCircle2 } from 'lucide-react';
-import { PageHeader, SectionCard } from '@/components';
+import { useState } from 'react';
+import { Factory, CheckCircle2, XCircle } from 'lucide-react';
+import { PageHeader, SectionCard, StatusBadge } from '@/components';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { SkeletonTable } from '@/components/feedback/SkeletonTable';
-import { useProductionEntries, useBulkApproveProductionEntries } from '../hooks/useProduction';
+import {
+  useProductionEntries,
+  useBulkApproveProductionEntries,
+  useApproveProductionEntry,
+} from '../hooks/useProduction';
 import { useEmployees } from '@/modules/masters/employees/hooks/useEmployees';
-import { useMachines } from '@/modules/masters/machines/hooks/useMachines';
-import { ProductionStatus, ShiftType } from '@frms/shared';
-import { ApprovalDrawer } from '../components/ApprovalDrawer';
+import { ProductionStatus } from '@frms/shared';
 import { QueueStatistics } from '../components/QueueStatistics';
-import { StatusBadge } from '@/components/feedback/StatusBadge';
+import { ProductionFilterBar } from '../components/ProductionFilterBar';
+import { useFilteredProductionEntries, defaultProductionFilters, type ProductionFilters } from '../hooks/useFilteredProductionEntries';
+import { useColumnPreferences } from '@/hooks/useColumnPreferences';
+import { APPROVAL_QUEUE_COLUMNS } from '../constants/production-columns';
+import type { TableContext } from '../constants/production-columns';
 import { cn } from '@/utils/cn';
+import { RejectDialog } from '../components/RejectDialog';
+import { formatProductionDateTime } from '@/utils';
 
 export function ApprovalQueue() {
   const { data: entries = [], isLoading } = useProductionEntries();
   const { data: employees = [] } = useEmployees();
-  const { data: machines = [] } = useMachines();
+
   const bulkApproveMutation = useBulkApproveProductionEntries();
+  const approveMutation = useApproveProductionEntry();
 
-  const [search, setSearch] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [shiftFilter, setShiftFilter] = useState<'ALL' | ShiftType>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | ProductionStatus.PENDING | ProductionStatus.REJECTED>('ALL');
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<ProductionFilters>({ ...defaultProductionFilters, status: ProductionStatus.PENDING });
+  
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [rejectEntryId, setRejectEntryId] = useState<string | null>(null);
 
-  // Sort newest first (by date + createdAt)
-  const sortedEntries = useMemo(() => {
-    return [...entries].sort((a, b) => {
-      const dateA = a.createdAt ?? a.date;
-      const dateB = b.createdAt ?? b.date;
-      return dateB.localeCompare(dateA);
-    });
-  }, [entries]);
+  const { filteredEntries, recordCount } = useFilteredProductionEntries(entries, filters, employees);
 
-  const filteredEntries = useMemo(() => {
-    return sortedEntries.filter((entry) => {
-      const employee = employees.find((e) => e.id === entry.employeeId);
-      const machine = machines.find((m) => m.id === entry.machineId);
-      const matchesSearch =
-        !search ||
-        employee?.name.toLowerCase().includes(search.toLowerCase()) ||
-        machine?.name.toLowerCase().includes(search.toLowerCase());
-      const matchesDate = !dateFilter || entry.date === dateFilter;
-      const matchesShift = shiftFilter === 'ALL' || entry.shift === shiftFilter;
-      const matchesStatus = statusFilter === 'ALL' 
-        ? (entry.status === ProductionStatus.PENDING || entry.status === ProductionStatus.REJECTED)
-        : entry.status === statusFilter;
-      return matchesSearch && matchesDate && matchesShift && matchesStatus;
-    });
-  }, [sortedEntries, employees, machines, search, dateFilter, shiftFilter, statusFilter]);
+  const columnProps = useColumnPreferences('frms_approval_columns', APPROVAL_QUEUE_COLUMNS);
+  const { orderedVisibleColumns } = columnProps;
 
   const toggleRow = (id: string) => {
     const next = new Set(selectedRows);
@@ -60,7 +45,8 @@ export function ApprovalQueue() {
   };
 
   const toggleAll = () => {
-    if (selectedRows.size === filteredEntries.filter(e => e.status === ProductionStatus.PENDING).length) {
+    const pendingCount = filteredEntries.filter(e => e.status === ProductionStatus.PENDING).length;
+    if (selectedRows.size === pendingCount && pendingCount > 0) {
       setSelectedRows(new Set());
     } else {
       setSelectedRows(new Set(filteredEntries.filter(e => e.status === ProductionStatus.PENDING).map(e => e.id!)));
@@ -69,91 +55,149 @@ export function ApprovalQueue() {
 
   const handleBulkApprove = () => {
     bulkApproveMutation.mutate(Array.from(selectedRows), {
-      onSuccess: () => {
-        setSelectedRows(new Set());
-      }
+      onSuccess: () => setSelectedRows(new Set())
     });
   };
 
+  const handleApprove = (id: string) => {
+    approveMutation.mutate(id);
+  };
+
   const selectedCount = selectedRows.size;
+  const pendingCount = filteredEntries.filter(e => e.status === ProductionStatus.PENDING).length;
+
+  const totalQty = filteredEntries.reduce((acc, e) => acc + (e.productionQuantity || 0), 0);
+  const totalHours = filteredEntries.reduce((acc, e) => acc + (e.hoursWorked || 0), 0);
+
+  const tableContext: TableContext = {
+    employees,
+    formatDateTime: formatProductionDateTime,
+    totalQty,
+    totalHours,
+    selectedRows,
+    toggleRow,
+    toggleAll,
+    selectedCount: selectedRows.size,
+    pendingCount,
+    handleApprove,
+    setRejectEntryId,
+    isApproving: approveMutation.isPending,
+    isApprovalQueue: true
+  };
 
   return (
-    <div className="space-y-6 pb-24 relative">
-      <PageHeader
-        title="Approval Queue"
-        description="Review and manage pending factory production"
-      />
+    <div className="space-y-4 flex flex-col h-[calc(100vh-80px)] pb-20">
+      <div className="shrink-0 space-y-6">
+        <PageHeader title="Approval Queue" description="Review and manage pending factory production" />
+        <QueueStatistics />
 
-      <QueueStatistics />
-
-      {/* ── Filters ── */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Quick Status Chips */}
-          {(['ALL', ProductionStatus.PENDING, ProductionStatus.REJECTED] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors border",
-                statusFilter === s 
-                  ? "bg-primary text-primary-foreground border-primary" 
-                  : "bg-background text-muted-foreground hover:bg-muted"
-              )}
-            >
-              {s === 'ALL' ? 'All Queue' : s === ProductionStatus.PENDING ? 'Pending' : 'Rejected'}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by employee or machine…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        <div className="space-y-4">
+          <ProductionFilterBar
+            filters={filters}
+            onChange={setFilters}
+            employees={employees}
+            statusOptions={[
+              { value: ProductionStatus.PENDING, label: 'Pending' },
+              { value: ProductionStatus.APPROVED, label: 'Approved' },
+              { value: ProductionStatus.REJECTED, label: 'Rejected' },
+            ]}
           />
-          <select
-            value={shiftFilter}
-            onChange={(e) => setShiftFilter(e.target.value as 'ALL' | ShiftType)}
-            className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="ALL">All Shifts</option>
-            <option value={ShiftType.DAY}>Day Shift</option>
-            <option value={ShiftType.NIGHT}>Night Shift</option>
-          </select>
+          
+          <div className="text-sm text-muted-foreground font-medium px-1">
+            Showing {recordCount} of {entries.length} production entries
+          </div>
         </div>
       </div>
 
-      {/* ── Table & Mobile Cards ── */}
-      <SectionCard className="overflow-hidden p-0 relative">
+      <SectionCard className="p-0 overflow-hidden flex flex-col flex-1 min-h-0 border border-border/50 relative">
         {isLoading ? (
           <div className="p-4">
-            <SkeletonTable columns={9} rows={5} />
+            <SkeletonTable columns={9} rows={10} />
           </div>
         ) : filteredEntries.length === 0 ? (
-          <EmptyState
-            icon={<Factory className="h-8 w-8 text-muted-foreground" />}
-            title="Everything has been reviewed."
-            description="No pending approvals match your criteria."
-          />
+          <div className="flex-1 overflow-auto">
+            <EmptyState
+              icon={<Factory className="h-8 w-8 text-muted-foreground" />}
+              title="Everything has been reviewed."
+              description="No pending approvals match your criteria."
+            />
+          </div>
         ) : (
-          <>
-            {/* Mobile Cards Layout */}
+          <div className="flex-1 overflow-auto relative scrollbar-thin">
+            <table className="w-full text-left whitespace-nowrap border-collapse hidden md:table">
+              <thead className="sticky top-0 z-30 bg-background/95 backdrop-blur shadow-sm border-b border-border/50">
+                <tr>
+                  {orderedVisibleColumns.map(colId => {
+                    const col = APPROVAL_QUEUE_COLUMNS.find(c => c.id === colId);
+                    if (!col) return null;
+                    return (
+                      <th 
+                        key={colId} 
+                        className="px-4 py-3 text-sm font-semibold text-muted-foreground border-b border-border/30 whitespace-nowrap"
+                        style={{ width: col.width, minWidth: col.width, maxWidth: col.width }}
+                      >
+                        {col.renderHeader?.(tableContext) ?? col.label}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.map((entry) => {
+                  const isSelected = selectedRows.has(entry.id!);
+
+                  return (
+                    <tr
+                      key={entry.id}
+                      className={cn(
+                        "group transition-colors hover:bg-muted/40",
+                        isSelected && "bg-primary/5 hover:bg-primary/10"
+                      )}
+                    >
+                      {orderedVisibleColumns.map(colId => {
+                        const col = APPROVAL_QUEUE_COLUMNS.find(c => c.id === colId);
+                        if (!col) return null;
+                        
+                        const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches'].includes(colId);
+                        const isCenter = ['status', 'actions', 'notes', 'checkbox'].includes(colId);
+
+                        return (
+                          <td 
+                            key={colId} 
+                            className={`px-4 py-3 text-sm border-b border-border/30 ${isNumber ? 'text-right tabular-nums' : isCenter ? 'text-center' : ''}`}
+                          >
+                            {col.render?.(entry, tableContext) ?? '—'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot className="sticky bottom-0 z-30 bg-background/95 backdrop-blur shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.05)] border-t border-border/50">
+                <tr>
+                  {orderedVisibleColumns.map((colId) => {
+                    const col = APPROVAL_QUEUE_COLUMNS.find(c => c.id === colId);
+                    if (!col) return null;
+                    const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches'].includes(colId);
+                    
+                    return (
+                      <td 
+                        key={colId} 
+                        className={`px-4 py-3 text-sm font-semibold border-b border-border/30 ${isNumber ? 'text-right tabular-nums' : ''}`}
+                      >
+                        {col.renderFooter?.(tableContext) ?? ''}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tfoot>
+            </table>
+
+            {/* Mobile Layout Fallback */}
             <div className="md:hidden divide-y">
               {filteredEntries.map((entry) => {
-                const emp = employees.find((e) => e.id === entry.employeeId);
-                const mach = machines.find((m) => m.id === entry.machineId);
+                const emp = employees.find((e: { id?: string; name: string }) => e.id === entry.employeeId);
                 const isSelected = selectedRows.has(entry.id!);
                 const canSelect = entry.status === ProductionStatus.PENDING;
 
@@ -169,14 +213,10 @@ export function ApprovalQueue() {
                         />
                       </div>
                     )}
-                    <div 
-                      className="flex-1 space-y-3 cursor-pointer"
-                      onClick={() => setSelectedEntryId(entry.id!)}
-                    >
+                    <div className="flex-1 space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="font-semibold text-sm">{emp?.name ?? entry.employeeId}</p>
-                          <p className="text-xs text-muted-foreground">{mach?.name ?? entry.machineId}</p>
                         </div>
                         <StatusBadge status={entry.status} />
                       </div>
@@ -193,77 +233,31 @@ export function ApprovalQueue() {
                           {entry.details?.map(d => d.designName).join(', ') || 'Unknown Design'}
                         </div>
                       </div>
+                      {entry.status === ProductionStatus.PENDING && (
+                        <div className="flex items-center gap-2 pt-2 border-t mt-2">
+                          <button 
+                            onClick={() => handleApprove(entry.id!)}
+                            disabled={approveMutation.isPending}
+                            className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium transition-colors"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Approve
+                          </button>
+                          <button 
+                            onClick={() => setRejectEntryId(entry.id!)}
+                            className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
-
-            {/* Desktop Table Layout */}
-            <table className="w-full text-sm text-left hidden md:table">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  <th className="px-4 py-3 w-10">
-                    <input 
-                      type="checkbox" 
-                      onChange={toggleAll}
-                      checked={selectedRows.size > 0 && selectedRows.size === filteredEntries.filter(e => e.status === ProductionStatus.PENDING).length}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Employee</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Machine</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Design</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Qty</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Hrs</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredEntries.map((entry) => {
-                  const emp = employees.find((e) => e.id === entry.employeeId);
-                  const mach = machines.find((m) => m.id === entry.machineId);
-                  const isSelected = selectedRows.has(entry.id!);
-                  const canSelect = entry.status === ProductionStatus.PENDING;
-
-                  return (
-                    <tr
-                      key={entry.id}
-                      className={cn(
-                        "hover:bg-muted/40 transition-colors cursor-pointer",
-                        isSelected && "bg-primary/5 hover:bg-primary/10"
-                      )}
-                    >
-                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                        {canSelect ? (
-                          <input 
-                            type="checkbox" 
-                            checked={isSelected}
-                            onChange={() => toggleRow(entry.id!)}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3.5 font-medium whitespace-nowrap" onClick={() => setSelectedEntryId(entry.id!)}>
-                        {new Date(entry.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                      </td>
-                      <td className="px-4 py-3.5 font-medium" onClick={() => setSelectedEntryId(entry.id!)}>{emp?.name ?? entry.employeeId}</td>
-                      <td className="px-4 py-3.5 text-muted-foreground" onClick={() => setSelectedEntryId(entry.id!)}>{mach?.name ?? entry.machineId}</td>
-                      <td className="px-4 py-3.5 truncate max-w-[150px] text-muted-foreground" onClick={() => setSelectedEntryId(entry.id!)}>
-                        {entry.details?.map(d => d.designName).join(', ') || '—'}
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums" onClick={() => setSelectedEntryId(entry.id!)}>{entry.productionQuantity}</td>
-                      <td className="px-4 py-3.5 text-right tabular-nums text-muted-foreground" onClick={() => setSelectedEntryId(entry.id!)}>{entry.hoursWorked}</td>
-                      <td className="px-4 py-3.5 text-center" onClick={() => setSelectedEntryId(entry.id!)}>
-                        <StatusBadge status={entry.status} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </>
+          </div>
         )}
       </SectionCard>
 
@@ -285,14 +279,10 @@ export function ApprovalQueue() {
         </div>
       )}
 
-      {selectedEntryId && (
-        <ApprovalDrawer
-          entryId={selectedEntryId}
-          open={!!selectedEntryId}
-          onOpenChange={(open) => !open && setSelectedEntryId(null)}
-          contextEntries={filteredEntries} // Pass context for "Approve Next" functionality
-        />
-      )}
+      <RejectDialog 
+        entryId={rejectEntryId} 
+        onClose={() => setRejectEntryId(null)} 
+      />
     </div>
   );
 }

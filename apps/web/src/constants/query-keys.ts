@@ -19,4 +19,5 @@ export const QUERY_KEYS = {
     LIST: ['production', 'list'],
     DETAIL: (id: string) => ['production', 'detail', id],
   },
+  ATTENDANCE: ['attendance', 'list'],
 } as const;

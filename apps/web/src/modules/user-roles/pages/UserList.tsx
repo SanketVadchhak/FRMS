@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUsers, useUpdateUser } from '../hooks/useUsers';
 import { StatusBadge } from '@/components/feedback';
-import { PageHeader, SectionCard, SkeletonTable, ErrorState } from '@/components';
+import { SectionCard, SkeletonTable, ErrorState } from '@/components';
 import { formatDateTime } from '@/utils';
 import { ROUTES } from '@/constants';
 import { Plus, Edit2, CheckCircle, XCircle, X } from 'lucide-react';
@@ -48,7 +48,10 @@ export function UserList() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="User Management" description="Manage system users and roles" />
+        <div>
+          <h3 className="text-lg font-medium">Users</h3>
+          <p className="text-sm text-muted-foreground">Manage system users and access</p>
+        </div>
         <SectionCard>
           <SkeletonTable columns={4} rows={3} />
         </SectionCard>
@@ -59,7 +62,9 @@ export function UserList() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="User Management" />
+        <div>
+          <h3 className="text-lg font-medium">Users</h3>
+        </div>
         <ErrorState onRetry={() => refetch()} />
       </div>
     );
@@ -67,19 +72,21 @@ export function UserList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="User Management" 
-        description="Manage system users and roles"
-        action={
-          <Link 
-            to={ROUTES.USERS.NEW} 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add User
-          </Link>
-        }
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-medium">Users</h3>
+          <p className="text-sm text-muted-foreground">
+            Manage system users and access
+          </p>
+        </div>
+        <Link 
+          to={ROUTES.USERS.NEW} 
+          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add User
+        </Link>
+      </div>
       
       <SectionCard className="p-0 overflow-hidden">
         <div className="w-full">

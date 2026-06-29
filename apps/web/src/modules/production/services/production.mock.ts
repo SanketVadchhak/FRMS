@@ -2,6 +2,7 @@ import type { ProductionEntry } from '@frms/shared';
 import { ProductionStatus, ShiftType } from '@frms/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { STORAGE_KEYS } from '@/constants';
+import { getCurrentUsername } from '../../auth/store/auth.store';
 
 const now = () => new Date().toISOString();
 
@@ -24,7 +25,7 @@ const SEED_ENTRIES: ProductionEntry[] = [
     status: ProductionStatus.PENDING,
     createdAt: now(),
     updatedAt: now(),
-    createdBy: 'operator1',
+    createdBy: 'system',
   },
   {
     id: uuidv4(),
@@ -45,9 +46,10 @@ const SEED_ENTRIES: ProductionEntry[] = [
     status: ProductionStatus.APPROVED,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 80000000).toISOString(),
-    createdBy: 'operator1',
+    createdBy: 'system',
+    updatedBy: 'system',
     approvedAt: new Date(Date.now() - 78000000).toISOString(),
-    approvedBy: 'supervisor1',
+    approvedBy: 'system',
   },
   {
     id: uuidv4(),
@@ -65,7 +67,7 @@ const SEED_ENTRIES: ProductionEntry[] = [
     status: ProductionStatus.DRAFT,
     createdAt: new Date(Date.now() - 90000000).toISOString(),
     updatedAt: new Date(Date.now() - 90000000).toISOString(),
-    createdBy: 'operator1',
+    createdBy: 'system',
   },
 ];
 
@@ -103,9 +105,10 @@ export const mockProductionService = {
       ...entry,
       id: uuidv4(),
       details: entry.details.map((d) => ({ ...d, id: d.id ?? uuidv4() })),
-      createdAt: now(),
-      updatedAt: now(),
-      createdBy: createdBy ?? 'system',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: createdBy ?? getCurrentUsername(),
+      updatedBy: createdBy ?? getCurrentUsername(),
     };
 
     saveEntries([newEntry, ...entries]);
@@ -141,8 +144,8 @@ export const mockProductionService = {
         ? updates.details.map((d) => ({ ...d, id: d.id ?? uuidv4() }))
         : existing.details,
       status: effectiveStatus,
-      updatedAt: now(),
-      updatedBy: updatedBy ?? 'system',
+      updatedAt: new Date().toISOString(),
+      updatedBy: updatedBy ?? getCurrentUsername(),
     };
 
     entries[index] = updatedEntry;
@@ -150,11 +153,12 @@ export const mockProductionService = {
     return updatedEntry;
   },
 
-  bulkApproveEntries: async (ids: string[], approvedBy: string): Promise<boolean> => {
-    await delay();
+  bulkApproveEntries: async (ids: string[], approvedBy?: string): Promise<boolean> => {
+    await delay(800);
     const entries = getEntries();
     
     let updatedCount = 0;
+    const approver = approvedBy || getCurrentUsername();
     const updatedEntries = entries.map(entry => {
       if (ids.includes(entry.id!) && entry.status === ProductionStatus.PENDING) {
         updatedCount++;
@@ -162,8 +166,9 @@ export const mockProductionService = {
           ...entry,
           status: ProductionStatus.APPROVED,
           approvedAt: now(),
-          approvedBy,
+          approvedBy: approver,
           updatedAt: now(),
+          updatedBy: approver,
         };
       }
       return entry;
@@ -176,20 +181,22 @@ export const mockProductionService = {
     return true;
   },
 
-  approveEntry: async (id: string, approvedBy = 'supervisor'): Promise<ProductionEntry> => {
+  approveEntry: async (id: string, approvedBy?: string): Promise<ProductionEntry> => {
+    await delay(600);
     return mockProductionService.updateEntry(id, {
       status: ProductionStatus.APPROVED,
       rejectionReason: undefined,
       approvedAt: now(),
-      approvedBy,
-    });
+      approvedBy: approvedBy ?? getCurrentUsername(),
+    }, approvedBy ?? getCurrentUsername());
   },
 
-  rejectEntry: async (id: string, reason: string, rejectedBy = 'supervisor'): Promise<ProductionEntry> => {
+  rejectEntry: async (id: string, reason: string, rejectedBy?: string): Promise<ProductionEntry> => {
+    await delay(600);
     return mockProductionService.updateEntry(id, {
       status: ProductionStatus.REJECTED,
       rejectionReason: reason,
-      updatedBy: rejectedBy,
-    });
+      updatedAt: now(),
+    }, rejectedBy ?? getCurrentUsername());
   },
 };

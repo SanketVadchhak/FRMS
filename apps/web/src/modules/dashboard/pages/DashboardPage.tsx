@@ -5,6 +5,7 @@ import { useEmployees } from '@/modules/masters/employees/hooks/useEmployees';
 import { ClipboardList, Clock, Users, Timer, ChevronRight } from 'lucide-react';
 import { ProductionStatus } from '@frms/shared';
 import { ROUTES } from '@/constants';
+import { formatProductionDate } from '@/utils';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ export function DashboardPage() {
                   
                   <div className="flex items-center gap-3 text-muted-foreground">
                     <span className="text-xs hidden sm:inline-block">
-                      {new Date(entry.createdAt ?? entry.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      {formatProductionDate(entry.date)}
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </div>

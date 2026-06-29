@@ -1,10 +1,9 @@
-import { Bell, UserCircle2 } from 'lucide-react';
-import { useAuthStore } from '@/stores';
+import { Bell } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { NAVIGATION_ITEMS } from '@/constants';
+import { UserMenu } from '../modules/auth/components/UserMenu';
 
 export function TopBar() {
-  const { user } = useAuthStore();
   const location = useLocation();
 
   // Find the current module name based on path for breadcrumb context
@@ -42,15 +41,8 @@ export function TopBar() {
 
         <div className="h-4 w-px bg-border hidden sm:block" />
 
-        {/* User Profile */}
         <div className="flex items-center gap-2">
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-sm font-medium leading-none">{user?.username || 'User'}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{user?.role || 'Guest'}</span>
-          </div>
-          <button className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring">
-            <UserCircle2 className="h-5 w-5" />
-          </button>
+          <UserMenu />
         </div>
       </div>
     </header>

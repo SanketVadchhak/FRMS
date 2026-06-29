@@ -19,7 +19,7 @@ export async function responseInterceptor(response: Response): Promise<Response>
   if (response.status === 401) {
     // Logic for silent token refresh goes here (calling auth.service.ts refresh)
     // For now, if unauthorized, clear auth state
-    useAuthStore.getState().clearAuth();
+    useAuthStore.getState().logout();
   }
   return response;
 }

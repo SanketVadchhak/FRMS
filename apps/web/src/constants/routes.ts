@@ -1,6 +1,7 @@
 export const ROUTES = {
   AUTH: {
     LOGIN: '/login',
+    PROFILE: '/profile',
   },
   DASHBOARD: '/',
   MASTERS: {
@@ -18,11 +19,20 @@ export const ROUTES = {
   REPORTS: '/reports',
   NOTIFICATIONS: '/notifications',
   DATA: '/data',
-  USERS: {
-    LIST: '/users',
-    NEW: '/users/new',
-    EDIT: '/users/:id',
-    ROLES: '/users/roles',
+  ATTENDANCE: {
+    LIST: '/attendance',
+    DASHBOARD: '/attendance/dashboard',
   },
-  SETTINGS: '/settings',
+  USERS: {
+    LIST: '/settings/users',
+    NEW: '/settings/users/new',
+    EDIT: '/settings/users/:id',
+    ROLES: '/settings/roles',
+  },
+  SETTINGS: {
+    ROOT: '/settings',
+    GENERAL: '/settings/general',
+    APPEARANCE: '/settings/appearance',
+    TABLES: '/settings/tables',
+  },
 } as const;

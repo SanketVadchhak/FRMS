@@ -1,4 +1,4 @@
-import { PageHeader, SectionCard } from '@/components';
+import { SectionCard } from '@/components';
 
 const PERMISSIONS = [
   { module: 'Dashboard', admin: 'Full Access', supervisor: 'Full Access', operator: 'Read-only' },
@@ -15,10 +15,12 @@ const PERMISSIONS = [
 export function RoleMatrix() {
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Role & Permission Matrix" 
-        description="Formal definitions of system access levels (v1)"
-      />
+      <div>
+        <h3 className="text-lg font-medium">Roles & Permissions</h3>
+        <p className="text-sm text-muted-foreground">
+          Formal definitions of system access levels
+        </p>
+      </div>
 
       <SectionCard>
         <div className="relative w-full overflow-auto">

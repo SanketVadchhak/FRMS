@@ -77,7 +77,7 @@ export function useRejectProductionEntry() {
 export function useBulkApproveProductionEntries() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => productionService.bulkApproveEntries(ids, 'supervisor'),
+    mutationFn: (ids: string[]) => productionService.bulkApproveEntries(ids),
     onSuccess: () => {
       toast.success('Selected entries approved successfully');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRODUCTION.LIST] });
