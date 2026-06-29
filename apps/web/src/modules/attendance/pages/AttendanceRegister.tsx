@@ -6,7 +6,6 @@ import { AttendanceFilterBar } from '../components/AttendanceFilterBar';
 import { useColumnPreferences } from '@/hooks/useColumnPreferences';
 import { TABLE_REGISTRY } from '@/config/table-registry';
 import type { AttendanceFilters, AttendanceRecord } from '@frms/shared';
-import { AttendanceStatus } from '@frms/shared';
 import { formatDate } from '@/utils';
 import { Clock } from 'lucide-react';
 
@@ -21,11 +20,15 @@ export function AttendanceRegister() {
 
   // Column preferences
   const registryEntry = TABLE_REGISTRY.find(t => t.storageKey === 'frms_attendance_columns')!;
-  const { orderedColumns } = useColumnPreferences(
+  const { orderedVisibleColumns } = useColumnPreferences(
     registryEntry.storageKey,
-    registryEntry.columns,
-    ['date', 'employee', 'status'] // mandatory columns
+    registryEntry.columns
   );
+
+  // Map IDs to actual column objects for rendering
+  const orderedColumns = orderedVisibleColumns
+    .map(id => registryEntry.columns.find(c => c.id === id))
+    .filter(c => c !== undefined);
 
   const handleClearFilters = () => {
     setFilters({ date: today });
@@ -41,7 +44,6 @@ export function AttendanceRegister() {
         return (
           <StatusBadge 
             status={record.status} 
-            variant={record.status === AttendanceStatus.PRESENT ? 'success' : 'destructive'} 
           />
         );
       case 'totalWorkingHours':
@@ -82,7 +84,7 @@ export function AttendanceRegister() {
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10 shadow-sm border-b">
                 <tr>
-                  {orderedColumns.map((col) => (
+                  {orderedColumns.map((col) => col && (
                     <th key={col.id} className="px-4 py-3 font-medium whitespace-nowrap">
                       {col.label}
                     </th>
@@ -92,7 +94,7 @@ export function AttendanceRegister() {
               <tbody className="divide-y">
                 {records.map((record) => (
                   <tr key={record.id} className="hover:bg-muted/30 transition-colors">
-                    {orderedColumns.map((col) => (
+                    {orderedColumns.map((col) => col && (
                       <td key={col.id} className="px-4 py-2.5 whitespace-nowrap align-middle">
                         {renderCell(col.id, record)}
                       </td>
@@ -104,7 +106,7 @@ export function AttendanceRegister() {
           ) : (
             <div className="h-full flex items-center justify-center p-12">
               <EmptyState 
-                icon={Clock}
+                icon={<Clock className="h-10 w-10 text-muted-foreground" />}
                 title="No attendance records found" 
                 description="No records exist for the selected filters. Change the date or clear filters to see more results."
               />

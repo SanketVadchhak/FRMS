@@ -4,10 +4,10 @@ import { useAttendanceStats } from '../hooks/useAttendance';
 import { Users, UserX, Clock, ClipboardList } from 'lucide-react';
 
 export function AttendanceDashboard() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0] as string;
   const [date, setDate] = useState(today);
 
-  const { data: stats, isLoading, isError, refetch } = useAttendanceStats(date);
+  const { data: stats, isError, refetch } = useAttendanceStats(date || today);
 
   return (
     <div className="space-y-6">
@@ -35,29 +35,21 @@ export function AttendanceDashboard() {
             title="Present Today"
             value={stats?.presentToday.toString() || '0'}
             icon={<Users className="h-4 w-4 text-emerald-500" />}
-            description="Employees with production entries"
-            loading={isLoading}
           />
           <StatCard
             title="Absent Today"
             value={stats?.absentToday.toString() || '0'}
             icon={<UserX className="h-4 w-4 text-destructive" />}
-            description="Employees with no production"
-            loading={isLoading}
           />
           <StatCard
             title="Employees Worked"
             value={stats?.totalEmployees.toString() || '0'}
             icon={<ClipboardList className="h-4 w-4 text-primary" />}
-            description="Total active employees"
-            loading={isLoading}
           />
           <StatCard
             title="Production Hours"
             value={stats ? `${stats.totalProductionHours.toFixed(1)} hrs` : '0 hrs'}
             icon={<Clock className="h-4 w-4 text-blue-500" />}
-            description="Total working hours logged"
-            loading={isLoading}
           />
         </div>
       )}

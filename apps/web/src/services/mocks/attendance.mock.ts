@@ -1,7 +1,17 @@
 import { STORAGE_KEYS } from '@/constants';
 import type { AttendanceRecord, AttendanceFilters, Employee, ProductionEntry } from '@frms/shared';
 import { AttendanceStatus } from '@frms/shared';
-import { getStorageItem } from '@/utils/storage';
+
+// Helper to get from local storage safely
+function getStorageItem<T>(key: string, defaultValue: T): T {
+  const item = localStorage.getItem(key);
+  if (!item) return defaultValue;
+  try {
+    return JSON.parse(item) as T;
+  } catch {
+    return defaultValue;
+  }
+}
 
 export const attendanceMock = {
   /**
@@ -59,14 +69,14 @@ export const attendanceMock = {
         let totalWorkingHours = 0;
         
         for (const entry of employeeEntries) {
-          totalQuantity += entry.quantity || 0;
-          totalWorkingHours += entry.hours || 0;
+          totalQuantity += entry.productionQuantity || 0;
+          totalWorkingHours += entry.hoursWorked || 0;
         }
 
         records.push({
-          id: `att_${employee.id}_${targetDate}`,
+          id: `att_${employee.id!}_${targetDate}`,
           date: targetDate,
-          employeeId: employee.id,
+          employeeId: employee.id!,
           employeeName: employee.name,
           status: isPresent ? AttendanceStatus.PRESENT : AttendanceStatus.ABSENT,
           totalEntries: employeeEntries.length,
