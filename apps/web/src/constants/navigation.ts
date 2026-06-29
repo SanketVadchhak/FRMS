@@ -29,7 +29,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'production',
     label: 'Production',
-    path: ROUTES.PRODUCTION.ENTRY, // Assume we want to route to main production entry
+    path: ROUTES.PRODUCTION.LIST, // Assume we want to route to main production entry
     icon: Factory,
   },
   {

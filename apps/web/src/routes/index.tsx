@@ -13,6 +13,8 @@ const UserForm = lazy(() => import('@/modules/user-roles').then(m => ({ default:
 const RoleMatrix = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.RoleMatrix })));
 const SettingsPage = lazy(() => import('@/modules/settings').then(m => ({ default: m.SettingsPage })));
 const EmployeeList = lazy(() => import('@/modules/masters/employees').then(m => ({ default: m.EmployeeList })));
+const ProductionList = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionList })));
+const ProductionEntry = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionEntry })));
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +86,30 @@ export const router = createBrowserRouter([
         element: (
           <PermissionGuard permission={PERMISSIONS.SETTINGS_READ}>
             <SettingsPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.PRODUCTION.LIST,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.PRODUCTION_READ}>
+            <ProductionList />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.PRODUCTION.NEW,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.PRODUCTION_WRITE}>
+            <ProductionEntry />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.PRODUCTION.EDIT,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.PRODUCTION_WRITE}>
+            <ProductionEntry />
           </PermissionGuard>
         ),
       },

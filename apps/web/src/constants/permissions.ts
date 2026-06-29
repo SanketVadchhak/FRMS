@@ -5,6 +5,10 @@ export const PERMISSIONS = {
   USERS_MANAGE: 'users:manage',
   SETTINGS_READ: 'settings:read',
   SETTINGS_WRITE: 'settings:write',
+  PRODUCTION_READ: 'production:read',
+  PRODUCTION_WRITE: 'production:write',
+  PRODUCTION_APPROVE: 'production:approve',
+  PRODUCTION_MANAGE: 'production:manage',
   // See docs/SECURITY.md for full list
 } as const;
 

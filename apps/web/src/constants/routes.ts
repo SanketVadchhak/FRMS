@@ -9,8 +9,9 @@ export const ROUTES = {
     DESIGNS: '/masters/designs',
   },
   PRODUCTION: {
-    ENTRY: '/production',
-    HISTORY: '/production/history',
+    LIST: '/production',
+    NEW: '/production/new',
+    EDIT: '/production/:id',
   },
   PAYROLL: '/payroll',
   REPORTS: '/reports',

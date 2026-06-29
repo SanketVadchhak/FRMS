@@ -13,5 +13,10 @@ export const QUERY_KEYS = {
   SETTINGS: {
     COMPANY: ['settings', 'company'],
   },
-  // Add more as needed
+  MACHINES: ['machines', 'list'],
+  DESIGNS: ['designs', 'list'],
+  PRODUCTION: {
+    LIST: ['production', 'list'],
+    DETAIL: (id: string) => ['production', 'detail', id],
+  },
 } as const;
