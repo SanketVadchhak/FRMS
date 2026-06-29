@@ -22,8 +22,6 @@ const ApprovalQueue = lazy(() => import('@/modules/production').then(m => ({ def
 const DashboardPage = lazy(() => import('@/modules/dashboard').then(m => ({ default: m.DashboardPage })));
 const LoginPage = lazy(() => import('@/modules/auth').then(m => ({ default: m.LoginPage })));
 const ProfilePage = lazy(() => import('@/modules/auth').then(m => ({ default: m.ProfilePage })));
-const AttendanceRegister = lazy(() => import('@/modules/attendance').then(m => ({ default: m.AttendanceRegister })));
-const AttendanceDashboard = lazy(() => import('@/modules/attendance').then(m => ({ default: m.AttendanceDashboard })));
 
 
 export const router = createBrowserRouter([
@@ -168,22 +166,6 @@ export const router = createBrowserRouter([
         element: (
           <PermissionGuard permission={PERMISSIONS.PRODUCTION_APPROVE}>
             <ApprovalQueue />
-          </PermissionGuard>
-        ),
-      },
-      {
-        path: ROUTES.ATTENDANCE.LIST,
-        element: (
-          <PermissionGuard permission={PERMISSIONS.EMPLOYEES_READ}>
-            <AttendanceRegister />
-          </PermissionGuard>
-        ),
-      },
-      {
-        path: ROUTES.ATTENDANCE.DASHBOARD,
-        element: (
-          <PermissionGuard permission={PERMISSIONS.EMPLOYEES_READ}>
-            <AttendanceDashboard />
           </PermissionGuard>
         ),
       },

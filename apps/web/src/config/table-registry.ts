@@ -1,11 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
-import { Factory, ClipboardCheck, HardHat, Users, Cpu, Clock } from 'lucide-react';
+import { Factory, ClipboardCheck, HardHat, Users, Cpu } from 'lucide-react';
 import type { ColumnDef } from '@/hooks/useColumnPreferences';
 import { PRODUCTION_LIST_COLUMNS, APPROVAL_QUEUE_COLUMNS } from '@/modules/production/constants/production-columns';
 import { EMPLOYEE_COLUMNS } from './table-columns/employee-columns';
 import { MACHINE_COLUMNS } from './table-columns/machine-columns';
 import { USER_COLUMNS } from './table-columns/user-columns';
-import { attendanceColumns } from './table-columns/attendance-columns';
 
 export interface TableRegistryEntry {
   /** Unique identifier and localStorage key for this table's layout. */
@@ -64,12 +63,5 @@ export const TABLE_REGISTRY: TableRegistryEntry[] = [
     description: 'System user accounts and roles',
     icon: Users,
     columns: USER_COLUMNS,
-  },
-  {
-    storageKey: 'frms_attendance_columns',
-    label: 'Attendance Register',
-    description: 'Auto-generated employee attendance',
-    icon: Clock,
-    columns: attendanceColumns,
   },
 ];

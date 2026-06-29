@@ -6,7 +6,6 @@ import {
   FileText,
   Settings,
   ClipboardCheck,
-  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ROUTES } from './routes';
@@ -39,13 +38,6 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     path: ROUTES.PRODUCTION.APPROVAL,
     icon: ClipboardCheck,
     permission: PERMISSIONS.PRODUCTION_APPROVE,
-  },
-  {
-    id: 'attendance',
-    label: 'Attendance',
-    path: ROUTES.ATTENDANCE.LIST,
-    icon: Users, // Using Users icon since we removed it from users&roles
-    permission: PERMISSIONS.EMPLOYEES_READ, // Using employees read permission for now, or production read
   },
   {
     id: 'workers',

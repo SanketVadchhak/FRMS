@@ -19,10 +19,6 @@ export const ROUTES = {
   REPORTS: '/reports',
   NOTIFICATIONS: '/notifications',
   DATA: '/data',
-  ATTENDANCE: {
-    LIST: '/attendance',
-    DASHBOARD: '/attendance/dashboard',
-  },
   USERS: {
     LIST: '/settings/users',
     NEW: '/settings/users/new',
