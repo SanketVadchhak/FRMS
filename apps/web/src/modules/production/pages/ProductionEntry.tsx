@@ -1,15 +1,59 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { PageHeader } from '@/components';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
-import { useProductionEntries, useCreateProductionEntry, useUpdateProductionEntry } from '../hooks/useProduction';
+import {
+  useProductionEntries,
+  useCreateProductionEntry,
+  useUpdateProductionEntry,
+} from '../hooks/useProduction';
 import { useEmployees } from '@/modules/masters/employees/hooks/useEmployees';
 import { useMachines } from '@/modules/masters/machines/hooks/useMachines';
-import type { ProductionEntry as IProductionEntry, ProductionDetail } from '@frms/shared';
+import type { ProductionEntry as IProductionEntry } from '@frms/shared';
 import { ShiftType, ProductionStatus } from '@frms/shared';
 import { ROUTES } from '@/constants';
 import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 
+// ─── Form Schema ──────────────────────────────────────────────────────────────
+const productionEntryFormSchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  employeeId: z.string().min(1, 'Employee is required'),
+  machineId: z.string().min(1, 'Machine is required'),
+  shift: z.nativeEnum(ShiftType),
+  details: z
+    .array(
+      z.object({
+        designName: z.string().min(1, 'Design name is required'),
+        totalStitches: z.number().min(0, 'Must be 0 or more'),
+      }),
+    )
+    .min(1, 'At least one production session is required'),
+  productionQuantity: z.number().min(0, 'Must be 0 or more'),
+  hoursWorked: z
+    .number({ invalid_type_error: 'Hours worked is required' })
+    .min(0.5, 'Minimum 0.5 hours')
+    .max(24, 'Maximum 24 hours'),
+  framesChanged: z.number().min(0),
+  threadBreakage: z.number().min(0),
+  bonus: z.number().min(0),
+  notes: z.string().optional(),
+});
+
+type ProductionEntryFormValues = z.infer<typeof productionEntryFormSchema>;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const inputClass =
+  'h-10 w-full rounded-md border border-input bg-background px-3 text-sm ' +
+  'focus:outline-none focus:ring-2 focus:ring-ring transition-colors ' +
+  'placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50';
+
+const labelClass = 'block text-sm font-medium mb-1.5';
+const errorClass = 'mt-1 text-xs text-destructive';
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export function ProductionEntry() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -22,384 +66,409 @@ export function ProductionEntry() {
   const createMutation = useCreateProductionEntry();
   const updateMutation = useUpdateProductionEntry();
 
-  // Setup State
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [employeeId, setEmployeeId] = useState('');
-  const [machineId, setMachineId] = useState('');
-  const [shift, setShift] = useState<ShiftType>(ShiftType.DAY);
+  // Track which status to submit with (Draft vs Submit)
+  const [submitStatus, setSubmitStatus] = useState<ProductionStatus>(ProductionStatus.DRAFT);
 
-  // Sessions State
-  const [sessions, setSessions] = useState<{ designName: string; stitches: number }[]>([
-    { designName: '', stitches: 0 }
-  ]);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, isDirty, isSubmitting },
+  } = useForm<ProductionEntryFormValues>({
+    resolver: zodResolver(productionEntryFormSchema),
+    defaultValues: {
+      date: new Date().toISOString().split('T')[0],
+      employeeId: '',
+      machineId: '',
+      shift: ShiftType.DAY,
+      details: [{ designName: '', totalStitches: 0 }],
+      productionQuantity: 0,
+      hoursWorked: undefined,
+      framesChanged: 0,
+      threadBreakage: 0,
+      bonus: 0,
+      notes: '',
+    },
+  });
 
-  // Production State
-  const [productionQuantity, setProductionQuantity] = useState<number>(0);
-  const [hoursWorked, setHoursWorked] = useState<number | ''>('');
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'details',
+  });
 
-  // Shift Metrics State
-  const [framesChanged, setFramesChanged] = useState<number>(0);
-  const [threadBreakage, setThreadBreakage] = useState<number>(0);
-  const [bonus, setBonus] = useState<number>(0);
-  const [notes, setNotes] = useState<string>('');
-
+  // Populate form when editing an existing entry
   useEffect(() => {
     if (isEditing && entries) {
       const entry = entries.find((e) => e.id === id);
       if (entry) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDate(entry.date);
-        setEmployeeId(entry.employeeId);
-        setMachineId(entry.machineId);
-        setShift(entry.shift);
-
-        let parsedStitches: { stitches: number }[] = [];
-        let parsedNotes = '';
-        try {
-          if (entry.notes) {
-            const parsed = JSON.parse(entry.notes);
-            if (parsed.sessions) {
-              parsedStitches = parsed.sessions;
-              parsedNotes = parsed.text || '';
-              setHoursWorked(parsed.hoursWorked || '');
-            } else {
-              parsedNotes = entry.notes;
-            }
-          }
-        } catch {
-          parsedNotes = entry.notes || '';
-        }
-
-        setNotes(parsedNotes);
-        setFramesChanged(entry.framesChanged || 0);
-        setThreadBreakage(entry.threadBreakage || 0);
-        setBonus(entry.bonus || 0);
-
-        if (entry.details.length > 0) {
-          setSessions(entry.details.map((d, i) => ({
-            designName: d.designId,
-            stitches: parsedStitches[i]?.stitches || 0
-          })));
-          setProductionQuantity(entry.details[0]?.completedPieces || 0);
-        }
+        reset({
+          date: entry.date,
+          employeeId: entry.employeeId,
+          machineId: entry.machineId,
+          shift: entry.shift,
+          details: entry.details.map((d) => ({
+            designName: d.designName,
+            totalStitches: d.totalStitches,
+          })),
+          productionQuantity: entry.productionQuantity,
+          hoursWorked: entry.hoursWorked,
+          framesChanged: entry.framesChanged ?? 0,
+          threadBreakage: entry.threadBreakage ?? 0,
+          bonus: entry.bonus ?? 0,
+          notes: entry.notes ?? '',
+        });
       }
     }
-  }, [isEditing, id, entries]);
+  }, [isEditing, id, entries, reset]);
 
-  const handleAddSession = () => {
-    if (sessions.length >= 2) return;
-    setSessions([...sessions, { designName: '', stitches: 0 }]);
+  const handleCancel = () => {
+    if (isDirty && !window.confirm('You have unsaved changes. Leave anyway?')) return;
+    navigate(ROUTES.PRODUCTION.LIST);
   };
 
-  const handleRemoveSession = (index: number) => {
-    setSessions(sessions.filter((_, idx) => idx !== index));
-  };
+  const submitWithStatus = (status: ProductionStatus) => (data: ProductionEntryFormValues) => {
+    const payload: Omit<IProductionEntry, 'id' | 'createdAt' | 'updatedAt'> = {
+      date: data.date,
+      employeeId: data.employeeId,
+      machineId: data.machineId,
+      shift: data.shift,
+      details: data.details.map((d) => ({
+        designName: d.designName,
+        totalStitches: d.totalStitches,
+      })),
+      productionQuantity: data.productionQuantity,
+      hoursWorked: data.hoursWorked,
+      framesChanged: data.framesChanged,
+      threadBreakage: data.threadBreakage,
+      bonus: data.bonus,
+      notes: data.notes ?? '',
+      status,
+      rejectionReason: undefined,
+    };
 
-  const handleSessionChange = (index: number, field: 'designName' | 'stitches', value: string | number) => {
-    const newSessions = [...sessions];
-    newSessions[index] = { ...newSessions[index], [field]: value } as { designName: string; stitches: number };
-    setSessions(newSessions);
+    if (isEditing) {
+      updateMutation.mutate(
+        { id: id!, updates: payload },
+        { onSuccess: () => navigate(ROUTES.PRODUCTION.LIST) },
+      );
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => navigate(ROUTES.PRODUCTION.LIST),
+      });
+    }
   };
 
   const handleSave = (status: ProductionStatus) => {
-    // Basic validation
-    if (!employeeId || !machineId || sessions.length === 0) {
-      alert('Please fill in Employee, Machine, and at least one Session.');
-      return;
-    }
-    const invalidSession = sessions.find(s => !s.designName);
-    if (invalidSession) {
-      alert('Please complete all session details (Design Name).');
-      return;
-    }
-    
-    if (hoursWorked === '' || hoursWorked < 0.5 || hoursWorked > 24) {
-      alert('Please enter a valid number of Hours Worked (between 0.5 and 24).');
-      return;
-    }
-
-    // Map UI state back to schema payload without modifying schemas
-    const payloadDetails: ProductionDetail[] = sessions.map((s, idx) => ({
-      designId: s.designName,
-      completedPieces: idx === 0 ? productionQuantity : 0, // Store total production in first detail
-      rejectedPieces: 0,
-      startTime: '00:00', // Dummy valid HH:mm
-      endTime: '00:00',   // Dummy valid HH:mm
-    }));
-
-    const notesPayload = JSON.stringify({
-      text: notes,
-      hoursWorked: Number(hoursWorked),
-      sessions: sessions.map(s => ({ stitches: s.stitches }))
-    });
-
-    const payload = {
-      date,
-      employeeId,
-      machineId,
-      shift,
-      framesChanged,
-      threadBreakage,
-      bonus,
-      notes: notesPayload, // Storing stitches metadata in notes to preserve schema
-      status,
-      details: payloadDetails,
-    } as Omit<IProductionEntry, 'id'>;
-
-    if (isEditing) {
-      updateMutation.mutate({ id: id!, updates: payload }, {
-        onSuccess: () => navigate(ROUTES.PRODUCTION.LIST)
-      });
-    } else {
-      createMutation.mutate(payload, {
-        onSuccess: () => navigate(ROUTES.PRODUCTION.LIST)
-      });
-    }
+    setSubmitStatus(status);
+    handleSubmit(submitWithStatus(status))();
   };
 
-  const employeeOptions = employees.map(e => ({ value: e.id!, label: e.name }));
-  const machineOptions = machines.map(m => ({ value: m.id!, label: m.name }));
+  const employeeOptions = employees.map((e) => ({ value: e.id!, label: e.name }));
+  const machineOptions = machines.map((m) => ({ value: m.id!, label: m.name }));
+
+  const isBusy = isSubmitting || createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="flex flex-col space-y-5 pb-24 md:pb-28">
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => navigate(ROUTES.PRODUCTION.LIST)}
-          className="p-2 -ml-2 rounded-full hover:bg-muted"
+    <div className="flex flex-col space-y-5 pb-28">
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <PageHeader 
-          title={isEditing ? 'Edit Production' : 'New Production Entry'} 
-          description="Log daily production details" 
+        <PageHeader
+          title={isEditing ? 'Edit Production Entry' : 'New Production Entry'}
+          description="Log daily production details"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-5xl">
-        
-        <div className="lg:col-span-12 space-y-5">
-          
-          {/* 1. Setup Section */}
-          <div className="bg-card border rounded-xl p-4 md:p-5 space-y-3 shadow-sm">
-            <h2 className="text-base font-semibold">1. Setup</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Date</div>
-                <input 
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Shift</div>
-                <select 
-                  value={shift}
-                  onChange={(e) => setShift(e.target.value as ShiftType)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value={ShiftType.DAY}>Day Shift</option>
-                  <option value={ShiftType.NIGHT}>Night Shift</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Employee</div>
-                <SearchableSelect
-                  options={employeeOptions}
-                  value={employeeId}
-                  onChange={setEmployeeId}
-                  placeholder="Select Employee..."
-                />
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Machine</div>
-                <SearchableSelect
-                  options={machineOptions}
-                  value={machineId}
-                  onChange={setMachineId}
-                  placeholder="Select Machine..."
-                />
-              </div>
+      <div className="max-w-3xl space-y-5">
+        {/* ── 1. Setup ── */}
+        <section className="bg-card border rounded-xl p-4 md:p-5 space-y-4 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            1 · Setup
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Date */}
+            <div>
+              <label htmlFor="date" className={labelClass}>Date</label>
+              <input
+                id="date"
+                type="date"
+                {...register('date')}
+                className={inputClass}
+              />
+              {errors.date && <p className={errorClass}>{errors.date.message}</p>}
+            </div>
+
+            {/* Shift */}
+            <div>
+              <label htmlFor="shift" className={labelClass}>Shift</label>
+              <select id="shift" {...register('shift')} className={inputClass}>
+                <option value={ShiftType.DAY}>Day Shift</option>
+                <option value={ShiftType.NIGHT}>Night Shift</option>
+              </select>
+              {errors.shift && <p className={errorClass}>{errors.shift.message}</p>}
+            </div>
+
+            {/* Employee */}
+            <div>
+              <div className={labelClass}>Employee</div>
+              <Controller
+                control={control}
+                name="employeeId"
+                render={({ field }) => (
+                  <SearchableSelect
+                    options={employeeOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select employee..."
+                  />
+                )}
+              />
+              {errors.employeeId && <p className={errorClass}>{errors.employeeId.message}</p>}
+            </div>
+
+            {/* Machine */}
+            <div>
+              <div className={labelClass}>Machine</div>
+              <Controller
+                control={control}
+                name="machineId"
+                render={({ field }) => (
+                  <SearchableSelect
+                    options={machineOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select machine..."
+                  />
+                )}
+              />
+              {errors.machineId && <p className={errorClass}>{errors.machineId.message}</p>}
             </div>
           </div>
+        </section>
 
-          {/* 2. Production Sessions */}
-          <div className="bg-card border rounded-xl p-4 md:p-5 space-y-3 shadow-sm">
-            <h2 className="text-base font-semibold">2. Production Sessions</h2>
-            
-            <div className="space-y-3">
-              {sessions.map((session, index) => (
-                <div key={index} className="relative rounded-lg border bg-muted/20 p-4 space-y-3 shadow-sm group">
-                  <h3 className="font-medium text-xs text-muted-foreground absolute top-3 left-3">
-                    Session {index + 1}
-                  </h3>
-                  
-                  {sessions.length > 1 && index > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSession(index)}
-                      className="absolute right-3 top-3 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                      title="Remove Session"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div className="space-y-1.5">
-                      <div className="text-sm font-medium mb-1.5">Design Name</div>
-                      <input 
-                        type="text"
-                        value={session.designName}
-                        onChange={(e) => handleSessionChange(index, 'designName', e.target.value)}
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                        placeholder="Enter design name..."
-                      />
-                    </div>
-                    
-                    <div className="space-y-1.5">
-                      <div className="text-sm font-medium mb-1.5">Total Stitches</div>
-                      <input 
-                        type="number"
-                        inputMode="numeric"
-                        min="0"
-                        value={session.stitches === 0 ? '' : session.stitches}
-                        onChange={(e) => handleSessionChange(index, 'stitches', Number(e.target.value))}
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-semibold"
-                        placeholder="0"
-                      />
-                    </div>
+        {/* ── 2. Production Sessions ── */}
+        <section className="bg-card border rounded-xl p-4 md:p-5 space-y-3 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            2 · Production Sessions
+          </h2>
+
+          <div className="space-y-3">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative rounded-lg border bg-muted/20 p-4 pt-8 space-y-3"
+              >
+                <span className="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Session {index + 1}
+                </span>
+
+                {fields.length > 1 && index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="absolute right-3 top-3 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                    aria-label="Remove session"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor={`details.${index}.designName`} className={labelClass}>
+                      Design Name
+                    </label>
+                    <input
+                      id={`details.${index}.designName`}
+                      type="text"
+                      {...register(`details.${index}.designName`)}
+                      className={inputClass}
+                      placeholder="e.g. ABC Floral Logo"
+                    />
+                    {errors.details?.[index]?.designName && (
+                      <p className={errorClass}>{errors.details[index]?.designName?.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor={`details.${index}.totalStitches`} className={labelClass}>
+                      Total Stitches
+                    </label>
+                    <input
+                      id={`details.${index}.totalStitches`}
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      {...register(`details.${index}.totalStitches`, { valueAsNumber: true })}
+                      className={inputClass}
+                      placeholder="0"
+                    />
+                    {errors.details?.[index]?.totalStitches && (
+                      <p className={errorClass}>{errors.details[index]?.totalStitches?.message}</p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {sessions.length < 2 && (
-              <button
-                type="button"
-                onClick={handleAddSession}
-                className="w-full flex items-center justify-center gap-2 h-10 border-2 border-dashed border-input rounded-lg text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                <Plus className="h-4 w-4" /> Add Session
-              </button>
-            )}
+              </div>
+            ))}
           </div>
 
-          {/* 3. Production */}
-          <div className="bg-card border rounded-xl p-4 md:p-5 space-y-3 shadow-sm">
-            <h2 className="text-base font-semibold">3. Production</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Production Quantity</div>
-                <input 
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  value={productionQuantity === 0 ? '' : productionQuantity}
-                  onChange={(e) => setProductionQuantity(Number(e.target.value))}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-green-600 dark:text-green-500 font-bold"
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Hours Worked</div>
-                <input 
-                  type="number"
-                  inputMode="decimal"
-                  step="0.5"
-                  min="0.5"
-                  max="24"
-                  value={hoursWorked}
-                  onChange={(e) => setHoursWorked(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-bold"
-                  placeholder="0.0"
-                />
-              </div>
+          {errors.details?.root && (
+            <p className={errorClass}>{errors.details.root.message}</p>
+          )}
+
+          {fields.length < 2 && (
+            <button
+              type="button"
+              onClick={() => append({ designName: '', totalStitches: 0 })}
+              className="w-full flex items-center justify-center gap-2 h-10 border-2 border-dashed border-input rounded-lg text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Session
+            </button>
+          )}
+        </section>
+
+        {/* ── 3. Production ── */}
+        <section className="bg-card border rounded-xl p-4 md:p-5 space-y-4 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            3 · Production
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="productionQuantity" className={labelClass}>
+                Production Quantity
+              </label>
+              <input
+                id="productionQuantity"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                {...register('productionQuantity', { valueAsNumber: true })}
+                className={`${inputClass} font-semibold text-emerald-600 dark:text-emerald-500`}
+                placeholder="0"
+              />
+              {errors.productionQuantity && (
+                <p className={errorClass}>{errors.productionQuantity.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="hoursWorked" className={labelClass}>
+                Hours Worked
+              </label>
+              <input
+                id="hoursWorked"
+                type="number"
+                inputMode="decimal"
+                step={0.5}
+                min={0.5}
+                max={24}
+                {...register('hoursWorked', { valueAsNumber: true })}
+                className={`${inputClass} font-semibold`}
+                placeholder="e.g. 8"
+              />
+              {errors.hoursWorked && (
+                <p className={errorClass}>{errors.hoursWorked.message}</p>
+              )}
             </div>
           </div>
+        </section>
 
-          {/* 4. Shift Metrics */}
-          <div className="bg-card border rounded-xl p-4 md:p-5 space-y-3 shadow-sm">
-            <h2 className="text-base font-semibold">4. Shift Metrics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Frames Changed</div>
-                <input 
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  value={framesChanged === 0 ? '' : framesChanged}
-                  onChange={(e) => setFramesChanged(Number(e.target.value))}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="0"
-                />
-              </div>
-              
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Thread Breakage</div>
-                <input 
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  value={threadBreakage === 0 ? '' : threadBreakage}
-                  onChange={(e) => setThreadBreakage(Number(e.target.value))}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="0"
-                />
-              </div>
-              
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium mb-1.5">Bonus Amount (₹)</div>
-                <input 
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  value={bonus === 0 ? '' : bonus}
-                  onChange={(e) => setBonus(Number(e.target.value))}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="0.00"
-                />
-              </div>
+        {/* ── 4. Shift Metrics ── */}
+        <section className="bg-card border rounded-xl p-4 md:p-5 space-y-4 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            4 · Shift Metrics
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="framesChanged" className={labelClass}>Frames Changed</label>
+              <input
+                id="framesChanged"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                {...register('framesChanged', { valueAsNumber: true })}
+                className={inputClass}
+                placeholder="0"
+              />
             </div>
-            
-            <div className="space-y-1.5 pt-2">
-              <div className="text-sm font-medium mb-1.5">Notes</div>
-              <textarea 
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[80px]"
-                placeholder="Add any remarks regarding the shift..."
+            <div>
+              <label htmlFor="threadBreakage" className={labelClass}>Thread Breakage</label>
+              <input
+                id="threadBreakage"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                {...register('threadBreakage', { valueAsNumber: true })}
+                className={inputClass}
+                placeholder="0"
+              />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="bonus" className={labelClass}>Bonus (₹)</label>
+              <input
+                id="bonus"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                {...register('bonus', { valueAsNumber: true })}
+                className={inputClass}
+                placeholder="0.00"
               />
             </div>
           </div>
 
-        </div>
-
+          <div>
+            <label htmlFor="notes" className={labelClass}>Notes</label>
+            <textarea
+              id="notes"
+              {...register('notes')}
+              className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-colors min-h-[80px] resize-none placeholder:text-muted-foreground"
+              placeholder="Add any shift remarks…"
+            />
+          </div>
+        </section>
       </div>
 
-      {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-[240px] z-40 bg-background/85 backdrop-blur-xl border-t p-4 pb-safe flex justify-end gap-3 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+      {/* ── Sticky Action Bar ── */}
+      <div className="fixed bottom-0 left-0 right-0 md:left-20 lg:left-64 z-40 bg-background/90 backdrop-blur-xl border-t p-4 flex justify-end gap-3 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
         <button
-          onClick={() => navigate(ROUTES.PRODUCTION.LIST)}
-          className="px-6 py-2.5 rounded-lg border border-input bg-background text-sm font-medium hover:bg-accent transition-colors hidden md:block"
+          type="button"
+          onClick={handleCancel}
+          disabled={isBusy}
+          className="hidden md:block px-5 py-2.5 rounded-lg border border-input bg-background text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
         <button
+          type="button"
           onClick={() => handleSave(ProductionStatus.DRAFT)}
-          className="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-primary/20 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+          disabled={isBusy}
+          className="flex-1 md:flex-none px-5 py-2.5 rounded-lg border border-primary/20 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
         >
-          Save Draft
+          {isBusy && submitStatus === ProductionStatus.DRAFT
+            ? 'Saving…'
+            : 'Save Draft'}
         </button>
         <button
+          type="button"
           onClick={() => handleSave(ProductionStatus.PENDING)}
-          className="flex-1 md:flex-none px-8 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-md"
+          disabled={isBusy}
+          className="flex-1 md:flex-none px-7 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
         >
-          Submit
+          {isBusy && submitStatus === ProductionStatus.PENDING
+            ? 'Submitting…'
+            : 'Submit'}
         </button>
       </div>
-
     </div>
   );
 }

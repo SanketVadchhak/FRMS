@@ -1,12 +1,11 @@
 import type { Employee, EmployeeFormValues } from '@frms/shared';
 import type { EmployeeService } from './employee.service';
+import { STORAGE_KEYS } from '@/constants';
 
-const STORAGE_KEY = 'frms_mock_employees';
+const now = () => new Date().toISOString();
+const delay = (ms = 500) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-// Wait helper to simulate network latency
-const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Initial mock data if empty
+// ─── Seed Data ────────────────────────────────────────────────────────────────
 const DEFAULT_EMPLOYEES: Employee[] = [
   {
     id: 'emp_1',
@@ -16,6 +15,8 @@ const DEFAULT_EMPLOYEES: Employee[] = [
     hourlyRate: 150,
     status: 'ACTIVE',
     notes: 'Senior embroiderer',
+    createdAt: '2023-01-15T09:00:00.000Z',
+    updatedAt: '2023-01-15T09:00:00.000Z',
   },
   {
     id: 'emp_2',
@@ -24,61 +25,79 @@ const DEFAULT_EMPLOYEES: Employee[] = [
     joiningDate: '2023-06-20',
     hourlyRate: 120,
     status: 'ACTIVE',
+    createdAt: '2023-06-20T09:00:00.000Z',
+    updatedAt: '2023-06-20T09:00:00.000Z',
+  },
+  {
+    id: 'emp_3',
+    name: 'Priya Sharma',
+    mobile: '+919876543212',
+    joiningDate: '2024-02-01',
+    hourlyRate: 130,
+    status: 'ACTIVE',
+    createdAt: '2024-02-01T09:00:00.000Z',
+    updatedAt: '2024-02-01T09:00:00.000Z',
   },
 ];
 
+// ─── Storage Helpers ──────────────────────────────────────────────────────────
 class MockEmployeeService implements EmployeeService {
-  private getEmployeesFromStorage(): Employee[] {
-    const data = localStorage.getItem(STORAGE_KEY);
+  private getFromStorage(): Employee[] {
+    const data = localStorage.getItem(STORAGE_KEYS.EMPLOYEES);
     if (!data) {
-      this.saveEmployeesToStorage(DEFAULT_EMPLOYEES);
+      this.saveToStorage(DEFAULT_EMPLOYEES);
       return DEFAULT_EMPLOYEES;
     }
-    return JSON.parse(data);
+    return JSON.parse(data) as Employee[];
   }
 
-  private saveEmployeesToStorage(employees: Employee[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
+  private saveToStorage(employees: Employee[]): void {
+    localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(employees));
   }
 
   async getEmployees(): Promise<Employee[]> {
     await delay();
-    return this.getEmployeesFromStorage();
+    return this.getFromStorage();
   }
 
   async getEmployeeById(id: string): Promise<Employee> {
     await delay();
-    const employees = this.getEmployeesFromStorage();
+    const employees = this.getFromStorage();
     const employee = employees.find((e) => e.id === id);
-    if (!employee) throw new Error('Employee not found');
+    if (!employee) throw new Error(`Employee "${id}" not found`);
     return employee;
   }
 
   async createEmployee(data: EmployeeFormValues): Promise<Employee> {
     await delay();
-    const employees = this.getEmployeesFromStorage();
-    
+    const employees = this.getFromStorage();
+
     const newEmployee: Employee = {
       ...data,
       id: `emp_${Date.now()}`,
-      status: data.status || 'ACTIVE',
-    } as Employee;
-    
-    this.saveEmployeesToStorage([...employees, newEmployee]);
+      status: data.status ?? 'ACTIVE',
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    this.saveToStorage([...employees, newEmployee]);
     return newEmployee;
   }
 
   async updateEmployee(id: string, data: Partial<EmployeeFormValues>): Promise<Employee> {
     await delay();
-    const employees = this.getEmployeesFromStorage();
+    const employees = this.getFromStorage();
     const index = employees.findIndex((e) => e.id === id);
-    
-    if (index === -1) throw new Error('Employee not found');
-    
-    const updatedEmployee = { ...employees[index], ...data } as Employee;
+    if (index === -1) throw new Error(`Employee "${id}" not found`);
+
+    const updatedEmployee: Employee = {
+      ...employees[index]!,
+      ...data,
+      updatedAt: now(),
+    };
+
     employees[index] = updatedEmployee;
-    this.saveEmployeesToStorage(employees);
-    
+    this.saveToStorage(employees);
     return updatedEmployee;
   }
 

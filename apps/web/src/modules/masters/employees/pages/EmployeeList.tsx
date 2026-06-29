@@ -9,8 +9,11 @@ import { EmployeeForm } from '../components/EmployeeForm';
 import type { Employee, EmployeeFormValues } from '@frms/shared';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { MoreVertical, Plus, Search, Edit2, CheckCircle, XCircle, X } from 'lucide-react';
+import { MoreVertical, Plus, Search, Edit2, CheckCircle, XCircle, X, Users } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { PageHeader } from '@/components';
+import { StatusBadge, SkeletonTable, EmptyState } from '@/components/feedback';
+
 
 export function EmployeeList() {
   const { data: employees, isLoading } = useEmployees();
@@ -88,18 +91,18 @@ export function EmployeeList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Employees</h2>
-          <p className="text-muted-foreground">Manage factory workers and their details.</p>
-        </div>
-        <button
-          onClick={handleOpenCreate}
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add Employee
-        </button>
-      </div>
+      <PageHeader
+        title="Employees"
+        description="Manage factory workers and their details."
+        action={
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Employee
+          </button>
+        }
+      />
 
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border shadow-sm">
@@ -146,14 +149,20 @@ export function EmployeeList() {
             <tbody className="divide-y block sm:table-row-group">
               {isLoading ? (
                 <tr className="block sm:table-row">
-                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground block sm:table-cell">
-                    Loading employees...
+                  <td colSpan={6} className="px-0 py-0 block sm:table-cell">
+                    <div className="p-4">
+                      <SkeletonTable columns={6} rows={5} />
+                    </div>
                   </td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr className="block sm:table-row">
-                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground block sm:table-cell">
-                    No employees found matching your criteria.
+                  <td colSpan={6} className="px-0 py-0 block sm:table-cell">
+                    <EmptyState 
+                      icon={<Users className="h-8 w-8 text-muted-foreground" />}
+                      title="No employees found"
+                      description={search || filter !== 'ALL' ? "Try adjusting your search or filter criteria." : "Get started by adding a new employee."}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -177,12 +186,7 @@ export function EmployeeList() {
                       {/* Mobile Only: 3-dot menu and status in header row */}
                       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                       <div className="flex sm:hidden items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                        <span className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
-                          emp.status === 'ACTIVE' ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-800"
-                        )}>
-                          {emp.status}
-                        </span>
+                        <StatusBadge status={emp.status} />
                         
                         <DropdownMenu.Root>
                           <DropdownMenu.Trigger asChild>
@@ -235,12 +239,7 @@ export function EmployeeList() {
                     
                     {/* Desktop Only: Status */}
                     <td className="hidden sm:table-cell px-4 py-4">
-                      <span className={cn(
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold",
-                        emp.status === 'ACTIVE' ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-800"
-                      )}>
-                        {emp.status}
-                      </span>
+                      <StatusBadge status={emp.status} />
                     </td>
                     
                     {/* Desktop Only: Actions */}
@@ -308,12 +307,7 @@ export function EmployeeList() {
                 <div className="p-6 flex-1 space-y-8">
                   {/* Action Header */}
                   <div className="flex items-center justify-between">
-                    <span className={cn(
-                      "inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold",
-                      viewingEmployee.status === 'ACTIVE' ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-800"
-                    )}>
-                      {viewingEmployee.status}
-                    </span>
+                    <StatusBadge status={viewingEmployee.status} />
                     <button
                       onClick={() => handleOpenEdit(viewingEmployee)}
                       className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"

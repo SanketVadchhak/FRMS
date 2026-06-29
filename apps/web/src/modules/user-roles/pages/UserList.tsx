@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUsers, useUpdateUser } from '../hooks/useUsers';
-import { UserStatusBadge } from '../components/UserStatusBadge';
+import { StatusBadge } from '@/components/feedback';
 import { PageHeader, SectionCard, SkeletonTable, ErrorState } from '@/components';
 import { formatDateTime } from '@/utils';
 import { ROUTES } from '@/constants';
@@ -125,7 +125,7 @@ export function UserList() {
                       
                       {/* Mobile Only: Status Badge */}
                       <div className="sm:hidden">
-                        <UserStatusBadge status={user.status} />
+                        <StatusBadge status={user.status} />
                       </div>
                     </td>
                     
@@ -141,7 +141,7 @@ export function UserList() {
                     
                     {/* Desktop Only: Status */}
                     <td className="hidden sm:table-cell px-4 py-4">
-                      <UserStatusBadge status={user.status} />
+                      <StatusBadge status={user.status} />
                     </td>
                   </tr>
                 ))
@@ -185,7 +185,7 @@ export function UserList() {
                     <div className="p-6 space-y-8">
                       {/* Status Header */}
                       <div className="flex items-center justify-between">
-                        <UserStatusBadge status={viewingUser.status} />
+                        <StatusBadge status={viewingUser.status} />
                       </div>
                       
                       {/* Account Info */}

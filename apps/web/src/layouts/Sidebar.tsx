@@ -33,10 +33,6 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
       <div className="flex-1 overflow-y-auto py-4 hide-scrollbar">
         <nav className="grid items-start px-3 text-sm font-medium gap-1 lg:px-4">
-          <div className="text-muted-foreground/70 px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest hidden lg:block">
-            Menu
-          </div>
-          
           {accessibleItems.map((item) => (
             <NavLink 
               key={item.id} 

@@ -12,7 +12,7 @@ export function SectionCard({ title, description, children, action, className }:
   return (
     <div className={cn("rounded-xl border bg-card text-card-foreground shadow-sm", className)}>
       {(title || description || action) && (
-        <div className="flex flex-col space-y-1.5 p-6 pb-4 border-b">
+        <div className="flex flex-col space-y-1.5 p-4 md:p-6 pb-4 border-b">
           <div className="flex items-center justify-between">
             <div>
               {title && <h3 className="font-semibold leading-none tracking-tight">{title}</h3>}
@@ -22,7 +22,7 @@ export function SectionCard({ title, description, children, action, className }:
           </div>
         </div>
       )}
-      <div className="p-6">{children}</div>
+      <div className="p-4 md:p-6">{children}</div>
     </div>
   );
 }

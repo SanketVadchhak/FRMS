@@ -1,8 +1,8 @@
 import { UserRole, UserStatus } from '@frms/shared';
 import type { User, UserCreateInput, UserUpdateInput } from '@frms/shared';
 import { v4 as uuidv4 } from 'uuid';
+import { STORAGE_KEYS } from '@/constants';
 
-const STORAGE_KEY = 'frms_mock_users';
 
 const initialUsers: User[] = [
   {
@@ -38,16 +38,16 @@ const initialUsers: User[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const getStoredUsers = (): User[] => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = localStorage.getItem(STORAGE_KEYS.USERS);
   if (stored) {
-    return JSON.parse(stored);
+    return JSON.parse(stored) as User[];
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(initialUsers));
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(initialUsers));
   return initialUsers;
 };
 
 const saveUsers = (users: User[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 };
 
 export const mockUsersApi = {

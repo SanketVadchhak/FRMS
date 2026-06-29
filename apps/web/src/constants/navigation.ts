@@ -6,6 +6,7 @@ import {
   FileText,
   Settings,
   Users,
+  ClipboardCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ROUTES } from './routes';
@@ -31,6 +32,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Production',
     path: ROUTES.PRODUCTION.LIST, // Assume we want to route to main production entry
     icon: Factory,
+  },
+  {
+    id: 'approval_queue',
+    label: 'Approval Queue',
+    path: ROUTES.PRODUCTION.APPROVAL,
+    icon: ClipboardCheck,
+    permission: PERMISSIONS.PRODUCTION_APPROVE,
   },
   {
     id: 'workers',

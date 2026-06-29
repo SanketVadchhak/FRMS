@@ -12,6 +12,7 @@ export const ROUTES = {
     LIST: '/production',
     NEW: '/production/new',
     EDIT: '/production/:id',
+    APPROVAL: '/production/approval',
   },
   PAYROLL: '/payroll',
   REPORTS: '/reports',

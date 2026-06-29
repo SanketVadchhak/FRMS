@@ -1,13 +1,57 @@
-
+import { Bell, UserCircle2 } from 'lucide-react';
+import { useAuthStore } from '@/stores';
+import { useLocation, Link } from 'react-router-dom';
+import { NAVIGATION_ITEMS } from '@/constants';
 
 export function TopBar() {
+  const { user } = useAuthStore();
+  const location = useLocation();
+
+  // Find the current module name based on path for breadcrumb context
+  const currentNav = NAVIGATION_ITEMS.find(item => 
+    location.pathname === item.path || 
+    (item.path !== '/' && location.pathname.startsWith(item.path))
+  );
+
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      <div className="w-full flex-1">
-        {/* Search can go here */}
+    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="flex-1 flex items-center">
+        {/* Breadcrumb / Context */}
+        <div className="hidden sm:flex items-center text-sm font-medium text-muted-foreground">
+          {currentNav ? (
+            <>
+              <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+              <span className="mx-2 opacity-50">/</span>
+              <span className="text-foreground">{currentNav.label}</span>
+            </>
+          ) : (
+            <span className="text-foreground">Factory Resource Management</span>
+          )}
+        </div>
       </div>
+      
       <div className="flex items-center gap-4">
-        {/* User menu and notifications can go here */}
+        {/* Notification Bell */}
+        <button 
+          className="relative p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label="Notifications"
+        >
+          <Bell className="h-4 w-4" />
+          <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-destructive border-2 border-card" />
+        </button>
+
+        <div className="h-4 w-px bg-border hidden sm:block" />
+
+        {/* User Profile */}
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex flex-col items-end">
+            <span className="text-sm font-medium leading-none">{user?.username || 'User'}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{user?.role || 'Guest'}</span>
+          </div>
+          <button className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring">
+            <UserCircle2 className="h-5 w-5" />
+          </button>
+        </div>
       </div>
     </header>
   );

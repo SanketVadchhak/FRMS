@@ -15,6 +15,9 @@ const SettingsPage = lazy(() => import('@/modules/settings').then(m => ({ defaul
 const EmployeeList = lazy(() => import('@/modules/masters/employees').then(m => ({ default: m.EmployeeList })));
 const ProductionList = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionList })));
 const ProductionEntry = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionEntry })));
+const ApprovalQueue = lazy(() => import('@/modules/production').then(m => ({ default: m.ApprovalQueue })));
+const DashboardPage = lazy(() => import('@/modules/dashboard').then(m => ({ default: m.DashboardPage })));
+
 
 export const router = createBrowserRouter([
   {
@@ -39,7 +42,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Dashboard Placeholder</div>,
+        element: <DashboardPage />,
       },
       {
         path: ROUTES.MASTERS.EMPLOYEES,
@@ -110,6 +113,14 @@ export const router = createBrowserRouter([
         element: (
           <PermissionGuard permission={PERMISSIONS.PRODUCTION_WRITE}>
             <ProductionEntry />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.PRODUCTION.APPROVAL,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.PRODUCTION_APPROVE}>
+            <ApprovalQueue />
           </PermissionGuard>
         ),
       },

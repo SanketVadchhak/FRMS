@@ -13,6 +13,9 @@ export const employeeSchema = z.object({
   bankName: z.string().optional(),
   accountNumber: z.string().optional(),
   ifscCode: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC code').optional().or(z.literal('')),
+  // Audit fields — populated automatically by the service layer
+  createdAt: z.string().datetime().optional(),
+  updatedAt: z.string().datetime().optional(),
 });
 
 export const createEmployeeSchema = employeeSchema.omit({ id: true });
