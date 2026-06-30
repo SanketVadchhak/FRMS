@@ -49,7 +49,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'payroll',
     label: 'Payroll',
-    path: ROUTES.PAYROLL,
+    path: ROUTES.PAYROLL.DASHBOARD,
     icon: Banknote,
     // Add permission once backend defines payroll:read, but for now we leave it or mock it
   },

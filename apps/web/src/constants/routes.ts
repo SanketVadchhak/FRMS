@@ -15,7 +15,12 @@ export const ROUTES = {
     EDIT: '/production/:id',
     APPROVAL: '/production/approval',
   },
-  PAYROLL: '/payroll',
+  PAYROLL: {
+    DASHBOARD: '/payroll',
+    REGISTER: '/payroll/register',
+    GENERATE: '/payroll/generate',
+    PAYMENTS: '/payroll/payments',
+  },
   REPORTS: '/reports',
   NOTIFICATIONS: '/notifications',
   DATA: '/data',

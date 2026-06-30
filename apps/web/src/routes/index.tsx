@@ -22,6 +22,7 @@ const ApprovalQueue = lazy(() => import('@/modules/production').then(m => ({ def
 const DashboardPage = lazy(() => import('@/modules/dashboard').then(m => ({ default: m.DashboardPage })));
 const LoginPage = lazy(() => import('@/modules/auth').then(m => ({ default: m.LoginPage })));
 const ProfilePage = lazy(() => import('@/modules/auth').then(m => ({ default: m.ProfilePage })));
+const PayrollWorkspace = lazy(() => import('@/modules/payroll/pages/PayrollWorkspace').then(m => ({ default: m.PayrollWorkspace })));
 
 
 export const router = createBrowserRouter([
@@ -168,6 +169,10 @@ export const router = createBrowserRouter([
             <ApprovalQueue />
           </PermissionGuard>
         ),
+      },
+      {
+        path: ROUTES.PAYROLL.DASHBOARD,
+        element: <PayrollWorkspace />,
       },
       // Other modules will be registered here
     ],

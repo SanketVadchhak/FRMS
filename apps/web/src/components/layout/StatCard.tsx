@@ -3,6 +3,7 @@ import { cn } from '@/utils/cn';
 interface StatCardProps {
   title: string;
   value: string | number;
+  description?: string;
   icon?: React.ReactNode;
   trend?: {
     value: number;
@@ -12,7 +13,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({ title, value, icon, trend, className }: StatCardProps) {
+export function StatCard({ title, value, description, icon, trend, className }: StatCardProps) {
   return (
     <div className={cn("rounded-xl border bg-card text-card-foreground shadow-sm p-6", className)}>
       <div className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -21,6 +22,7 @@ export function StatCard({ title, value, icon, trend, className }: StatCardProps
       </div>
       <div>
         <div className="text-2xl font-bold">{value}</div>
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trend && (
           <p className="text-xs text-muted-foreground mt-1">
             <span className={cn(
