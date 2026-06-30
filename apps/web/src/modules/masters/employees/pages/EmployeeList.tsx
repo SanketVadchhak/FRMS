@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   useEmployees, 
   useCreateEmployee, 
@@ -23,8 +24,18 @@ export function EmployeeList() {
   const updateEmployee = useUpdateEmployee();
   const changeStatus = useChangeEmployeeStatus();
 
-  const [search, setSearch] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState(() => location.state?.search || '');
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ACTIVE');
+
+  // Load search from state if navigated from Global Search
+  useEffect(() => {
+    if (location.state?.search) {
+      // Optional: Clear state so refresh doesn't keep searching
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
   
   const { orderedVisibleColumns } = useColumnPreferences('frms_employee_columns', EMPLOYEE_COLUMNS);
 

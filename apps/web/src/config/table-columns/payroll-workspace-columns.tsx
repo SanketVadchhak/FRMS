@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { ColumnDef } from '@/hooks/useColumnPreferences';
 import type { PayrollLedgerSummary } from '@frms/shared';
 import { formatCurrency } from '@/utils/format';

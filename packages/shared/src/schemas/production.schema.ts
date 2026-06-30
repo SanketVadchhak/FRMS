@@ -15,8 +15,8 @@ export enum ProductionStatus {
 // Production session (one design run within a shift)
 export const productionDetailSchema = z.object({
   id: z.string().optional(),
-  designName: z.string().min(1, 'Design name is required'),
-  totalStitches: z.number().min(0, 'Must be 0 or more').default(0),
+  designName: z.string().optional(),
+  totalStitches: z.number().min(0).default(0).optional(),
 });
 
 export const productionEntrySchema = z.object({

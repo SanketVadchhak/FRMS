@@ -26,8 +26,8 @@ const productionEntryFormSchema = z.object({
   details: z
     .array(
       z.object({
-        designName: z.string().min(1, 'Design name is required'),
-        totalStitches: z.number().min(0, 'Must be 0 or more'),
+        designName: z.string().optional(),
+        totalStitches: z.coerce.number().min(0, 'Must be 0 or more').optional(),
       }),
     )
     .min(1, 'At least one production session is required'),
@@ -82,9 +82,17 @@ export function ProductionEntry() {
       employeeId: '',
       machineId: '',
       shift: ShiftType.DAY,
-      details: [{ designName: '', totalStitches: 0 }],
+      details: (() => {
+        try {
+          const saved = localStorage.getItem('frms_last_production_details');
+          if (saved) return JSON.parse(saved);
+        } catch {
+          // ignore
+        }
+        return [{ designName: '', totalStitches: 0 }];
+      })(),
       productionQuantity: 0,
-      hoursWorked: undefined,
+      hoursWorked: 12,
       framesChanged: 0,
       threadBreakage: 0,
       bonus: 0,
@@ -146,6 +154,8 @@ export function ProductionEntry() {
       status,
       rejectionReason: undefined,
     };
+
+    localStorage.setItem('frms_last_production_details', JSON.stringify(payload.details));
 
     if (isEditing) {
       updateMutation.mutate(

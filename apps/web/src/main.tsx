@@ -5,6 +5,10 @@ import './styles/globals.css';
 import './styles/theme.css';
 import './styles/animations.css';
 
+import { registerSearchProviders } from './lib/search/registry';
+
+registerSearchProviders();
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

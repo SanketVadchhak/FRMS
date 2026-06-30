@@ -5,7 +5,6 @@ const PERMISSIONS = [
   { module: 'Master Data', admin: 'Create/Edit/Deactivate', supervisor: 'View Only', operator: 'View Only' },
   { module: 'Production', admin: 'Full Access', supervisor: 'Full Access', operator: 'Create/View' },
   { module: 'Payroll', admin: 'Generate/Lock/View', supervisor: 'View Only', operator: 'No Access' },
-  { module: 'Reports', admin: 'Full Access', supervisor: 'Full Access', operator: 'No Access' },
   { module: 'Notifications', admin: 'Manage', supervisor: 'View Own', operator: 'View Own' },
   { module: 'Data Mgmt', admin: 'Full Access', supervisor: 'No Access', operator: 'No Access' },
   { module: 'User Mgmt', admin: 'Full Access', supervisor: 'No Access', operator: 'No Access' },

@@ -1,13 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
-import { Factory, ClipboardCheck, HardHat, Users, Cpu, Receipt, Banknote } from 'lucide-react';
+import { Factory, ClipboardCheck, HardHat, Banknote } from 'lucide-react';
 import type { ColumnDef } from '@/hooks/useColumnPreferences';
 import { PRODUCTION_LIST_COLUMNS, APPROVAL_QUEUE_COLUMNS } from '@/modules/production/constants/production-columns';
 import { EMPLOYEE_COLUMNS } from './table-columns/employee-columns';
-import { MACHINE_COLUMNS } from './table-columns/machine-columns';
-import { USER_COLUMNS } from './table-columns/user-columns';
-import { PAYMENT_COLUMNS } from './table-columns/payment-columns';
-import { PAYROLL_COLUMNS } from './table-columns/payroll-columns';
 import { PAYROLL_WORKSPACE_COLUMNS } from './table-columns/payroll-workspace-columns';
+
 
 export interface TableRegistryEntry {
   /** Unique identifier and localStorage key for this table's layout. */
@@ -52,34 +49,6 @@ export const TABLE_REGISTRY: TableRegistryEntry[] = [
     description: 'Worker master list',
     icon: HardHat,
     columns: EMPLOYEE_COLUMNS,
-  },
-  {
-    storageKey: 'frms_machine_columns',
-    label: 'Machines',
-    description: 'Factory machine inventory',
-    icon: Cpu,
-    columns: MACHINE_COLUMNS,
-  },
-  {
-    storageKey: 'frms_user_columns',
-    label: 'Users',
-    description: 'System user accounts and roles',
-    icon: Users,
-    columns: USER_COLUMNS,
-  },
-  {
-    storageKey: 'frms_payment_columns',
-    label: 'Employee Payments',
-    description: 'Advance and bonus payment records',
-    icon: Banknote,
-    columns: PAYMENT_COLUMNS,
-  },
-  {
-    storageKey: 'frms_payroll_columns',
-    label: 'Payroll Register',
-    description: 'Generated employee payroll records',
-    icon: Receipt,
-    columns: PAYROLL_COLUMNS,
   },
   {
     storageKey: 'frms_payroll_workspace_columns',

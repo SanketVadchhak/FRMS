@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SectionCard } from '@/components/layout/SectionCard';
@@ -22,7 +22,18 @@ export function ProductionList() {
   const { data: entries = [], isLoading } = useProductionEntries();
   const { data: employees = [] } = useEmployees();
 
-  const [filters, setFilters] = useState<ProductionFilters>(defaultProductionFilters);
+  const location = useLocation();
+  const [filters, setFilters] = useState<ProductionFilters>(() => ({
+    ...defaultProductionFilters,
+    search: location.state?.search || defaultProductionFilters.search
+  }));
+
+  useEffect(() => {
+    if (location.state?.search) {
+      // Optional: Clear state so refresh doesn't keep searching
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const { filteredEntries, recordCount } = useFilteredProductionEntries(entries, filters, employees);
   
@@ -134,24 +145,6 @@ export function ProductionList() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="sticky bottom-0 z-30 bg-background/95 backdrop-blur shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.05)] border-t border-border/50">
-                <tr>
-                  {orderedVisibleColumns.map((colId) => {
-                    const col = PRODUCTION_LIST_COLUMNS.find(c => c.id === colId);
-                    if (!col) return null;
-                    const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches'].includes(colId);
-                    
-                    return (
-                      <td 
-                        key={colId} 
-                        className={`px-4 py-3 text-sm font-semibold border-b border-border/30 ${isNumber ? 'text-right tabular-nums' : ''}`}
-                      >
-                        {col.renderFooter?.(tableContext) ?? ''}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tfoot>
             </table>
           </div>
         )}

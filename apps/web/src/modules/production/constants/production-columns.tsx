@@ -85,7 +85,7 @@ export const PRODUCTION_COLUMNS: ProductionColumnDef[] = [
         return (
           <Tooltip content={
             <div className="space-y-1">
-              {entry.details.map((d, i) => <div key={i}>{d.designName} ({d.totalStitches.toLocaleString()} sts)</div>)}
+              {entry.details.map((d, i) => <div key={i}>{d.designName || 'No Design'} ({(d.totalStitches || 0).toLocaleString()} sts)</div>)}
             </div>
           }>
             <span className="border-b border-dashed border-muted-foreground cursor-help text-primary">

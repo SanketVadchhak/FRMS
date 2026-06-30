@@ -6,9 +6,10 @@ interface StatCardProps {
   description?: string;
   icon?: React.ReactNode;
   trend?: {
-    value: number;
+    value: number | string;
     label: string;
     isPositive?: boolean;
+    showPlus?: boolean;
   };
   className?: string;
 }
@@ -30,7 +31,7 @@ export function StatCard({ title, value, description, icon, trend, className }: 
               trend.isPositive === true ? "text-emerald-500" : 
               trend.isPositive === false ? "text-destructive" : ""
             )}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
+              {trend.showPlus && trend.isPositive ? '+' : ''}{trend.value}
             </span>
             {trend.label}
           </p>

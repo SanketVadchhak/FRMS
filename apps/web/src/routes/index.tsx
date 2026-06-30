@@ -7,6 +7,8 @@ import { ROUTES, PERMISSIONS } from '@/constants';
 import { AuthGuard } from './guards/AuthGuard';
 import { PermissionGuard } from './guards/PermissionGuard';
 
+
+
 // Lazy loaded modules
 const UserList = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.UserList })));
 const UserForm = lazy(() => import('@/modules/user-roles').then(m => ({ default: m.UserForm })));
@@ -170,10 +172,8 @@ export const router = createBrowserRouter([
           </PermissionGuard>
         ),
       },
-      {
-        path: ROUTES.PAYROLL.DASHBOARD,
-        element: <PayrollWorkspace />,
-      },
+      { path: 'payroll', element: <PayrollWorkspace /> },
+
       // Other modules will be registered here
     ],
   },

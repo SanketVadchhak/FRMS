@@ -21,7 +21,7 @@ export const ROUTES = {
     GENERATE: '/payroll/generate',
     PAYMENTS: '/payroll/payments',
   },
-  REPORTS: '/reports',
+
   NOTIFICATIONS: '/notifications',
   DATA: '/data',
   USERS: {

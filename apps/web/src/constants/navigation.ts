@@ -3,7 +3,6 @@ import {
   Factory,
   HardHat,
   Banknote,
-  FileText,
   Settings,
   ClipboardCheck,
 } from 'lucide-react';
@@ -53,12 +52,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     icon: Banknote,
     // Add permission once backend defines payroll:read, but for now we leave it or mock it
   },
-  {
-    id: 'reports',
-    label: 'Reports',
-    path: ROUTES.REPORTS,
-    icon: FileText,
-  },
+
 
   {
     id: 'settings',

@@ -174,24 +174,6 @@ export function ApprovalQueue() {
                   );
                 })}
               </tbody>
-              <tfoot className="sticky bottom-0 z-30 bg-background/95 backdrop-blur shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.05)] border-t border-border/50">
-                <tr>
-                  {orderedVisibleColumns.map((colId) => {
-                    const col = APPROVAL_QUEUE_COLUMNS.find(c => c.id === colId);
-                    if (!col) return null;
-                    const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches'].includes(colId);
-                    
-                    return (
-                      <td 
-                        key={colId} 
-                        className={`px-4 py-3 text-sm font-semibold border-b border-border/30 ${isNumber ? 'text-right tabular-nums' : ''}`}
-                      >
-                        {col.renderFooter?.(tableContext) ?? ''}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tfoot>
             </table>
 
             {/* Mobile Layout Fallback */}
