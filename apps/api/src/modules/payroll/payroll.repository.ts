@@ -29,7 +29,7 @@ export class PayrollRepository {
     createdBy: string,
     advanceIdsToDeduct: string[]
   ) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       // 1. Create the Payroll Record
       const payroll = await tx.payroll.create({
         data: {

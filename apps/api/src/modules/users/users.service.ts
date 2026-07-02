@@ -8,7 +8,7 @@ export class UsersService {
 
   async listUsers(companyId: string) {
     const users = await this.repo.findAllByCompany(companyId);
-    return users.map(u => ({
+    return users.map((u: any) => ({
       id: u.id,
       username: u.username,
       status: u.status,
@@ -19,7 +19,7 @@ export class UsersService {
 
   async createUser(companyId: string, input: UserCreateInput, createdBy: string) {
     // Basic checks
-    const existing = await this.repo.findAllByCompany(companyId).then(users => users.find(u => u.username === input.username));
+    const existing = await this.repo.findAllByCompany(companyId).then(users => users.find((u: any) => u.username === input.username));
     if (existing) {
       throw new ConflictError('Username already exists');
     }

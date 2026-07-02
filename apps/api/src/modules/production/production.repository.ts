@@ -29,7 +29,7 @@ export class ProductionRepository {
 
   async createWithDetails(companyId: string, data: SharedProductionEntry, createdBy: string) {
     // We use a transaction to ensure entry and details are created together
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       const entry = await tx.productionEntry.create({
         data: {
           companyId,
@@ -63,7 +63,7 @@ export class ProductionRepository {
   }
 
   async updateWithDetails(companyId: string, id: string, data: SharedProductionEntry, updatedBy: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       // Delete existing details first
       await tx.productionDetail.deleteMany({
         where: { productionEntryId: id },
