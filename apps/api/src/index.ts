@@ -78,6 +78,10 @@ async function registerPlugins() {
     fastify.get('/api/health', async () => {
       return { status: 'ok', timestamp: new Date().toISOString() };
     });
+  } catch (err) {
+    fastify.log.error(err);
+    throw err;
+  }
 }
 
 // Register plugins globally so they are ready for serverless
