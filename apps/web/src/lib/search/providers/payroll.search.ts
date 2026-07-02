@@ -1,6 +1,6 @@
 import { Banknote } from 'lucide-react';
 import type { SearchProvider, GlobalSearchResult } from '../searchEngine';
-import { payrollMockApi } from '@/modules/payroll/services/payroll.mock';
+import { payrollService } from '@/modules/payroll/services/payroll.service';
 import { ROUTES } from '@/constants/routes';
 
 export const payrollSearchProvider: SearchProvider = {
@@ -8,7 +8,7 @@ export const payrollSearchProvider: SearchProvider = {
   search: async (query: string): Promise<GlobalSearchResult[]> => {
     const q = query.toLowerCase();
     const results: GlobalSearchResult[] = [];
-    const payrolls = await payrollMockApi.getPayrolls();
+    const payrolls = await payrollService.getPayrolls();
 
     for (const payroll of payrolls) {
       let score = 0;

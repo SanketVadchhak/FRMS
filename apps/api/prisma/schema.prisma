@@ -3,95 +3,306 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 // -----------------------------------------------------------------------------
-// Models - See docs/DATABASE.md for complete architecture and indexing strategy
+// Core / Multi-Tenancy
+// -----------------------------------------------------------------------------
+
+model Company {
+  id     String @id @default(uuid())
+  name   String
+  status String @default("ACTIVE") // ACTIVE | SUSPENDED
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  settings          CompanySettings?
+  users             User[]
+  employees         Employee[]
+  machines          Machine[]
+  designs           Design[]
+  productionEntries ProductionEntry[]
+  payrolls          Payroll[]
+  roles             Role[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+}
+
+model CompanySettings {
+  id        String  @id @default(uuid())
+  companyId String  @unique
+  logo      String?
+  address   String?
+  gstNumber String?
+  currency  String  @default("INR")
+  timezone  String  @default("Asia/Kolkata")
+
+  // Serialized JSON configurations
+  payrollConfig    String?
+  productionConfig String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// Identity & Access Management (IAM)
+// -----------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  companyId    String
+  username     String    @unique
+  passwordHash String
+  status       String    @default("ACTIVE") // ACTIVE | INACTIVE
+  lastLoginAt  DateTime?
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  roles         UserRole[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+
+  @@index([companyId])
+  @@index([username])
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  companyId   String
+  name        String
+  description String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  name        String  @unique // e.g., 'production:create', 'payroll:read'
+  description String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// -----------------------------------------------------------------------------
+// Master Data
 // -----------------------------------------------------------------------------
 
 model Employee {
-  id              String   @id @default(uuid())
-  name            String
-  mobile          String?
-  joiningDate     DateTime
-  hourlyRate      Decimal
-  status          String   @default("ACTIVE") // ACTIVE | INACTIVE
-  notes           String?
-  bankName        String?
-  accountNumber   String?
-  ifscCode        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(uuid())
+  companyId     String
+  name          String
+  mobile        String?
+  joiningDate   DateTime
+  hourlyRate    Decimal
+  status        String   @default("ACTIVE") // ACTIVE | INACTIVE
+  notes         String?
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
 
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   productionEntries ProductionEntry[]
   salaryAdvances    SalaryAdvance[]
   payrolls          Payroll[]
 
-  @@index([name])
-  @@index([status])
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([companyId, name])
 }
 
 model Machine {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
+  companyId String
   name      String
-  status    String   @default("ACTIVE") // ACTIVE | INACTIVE
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    String @default("ACTIVE") // ACTIVE | INACTIVE
 
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   productionEntries ProductionEntry[]
+
+  @@index([companyId])
+  @@index([companyId, status])
 }
 
 model Design {
   id        String   @id @default(uuid())
+  companyId String
+  code      String?
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    String   @default("ACTIVE") // ACTIVE | INACTIVE
+  
 
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   productionDetails ProductionDetail[]
+
+  @@index([companyId])
 }
+
+// -----------------------------------------------------------------------------
+// Production Workflow
+// -----------------------------------------------------------------------------
 
 model ProductionEntry {
   id             String   @id @default(uuid())
+  companyId      String
   date           DateTime @default(now())
   employeeId     String
   machineId      String
-  shift          String   // DAY | NIGHT
-  framesChanged  Int
-  threadBreakage Int
+  shift          String   @default("DAY") // DAY | NIGHT
+  // Shift metrics
+  framesChanged  Int      @default(0)
+  threadBreakage Int      @default(0)
   bonus          Decimal  @default(0)
   notes          String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  
+  // Aggregate metrics & workflow
+  productionQuantity Int     @default(0)
+  hoursWorked        Decimal @default(0.5)
+  status             String  @default("DRAFT") // DRAFT | PENDING | APPROVED | REJECTED
+  rejectionReason    String?
+  approvedAt         DateTime?
+  approvedBy         String?
 
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employee Employee @relation(fields: [employeeId], references: [id])
   machine  Machine  @relation(fields: [machineId], references: [id])
 
   details ProductionDetail[]
 
-  @@index([date])
+  @@index([companyId])
+  @@index([companyId, date])
   @@index([employeeId])
   @@index([machineId])
-  @@index([employeeId, date])
-  @@index([shift])
 }
 
 model ProductionDetail {
   id                String   @id @default(uuid())
   productionEntryId String
-  designId          String
-  stitchCount       Int
-  hoursWorked       Decimal
-  qualityCheck      String   // PASS | FAIL
-  createdAt         DateTime @default(now())
+  
+  designId          String?
+  designName        String?
+  totalStitches     Int      @default(0)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  entry  ProductionEntry @relation(fields: [productionEntryId], references: [id])
-  design Design          @relation(fields: [designId], references: [id])
+  entry  ProductionEntry @relation(fields: [productionEntryId], references: [id], onDelete: Cascade)
+  design Design?         @relation(fields: [designId], references: [id])
 
   @@index([productionEntryId])
   @@index([designId])
 }
+
+// -----------------------------------------------------------------------------
+// Payroll & Finances
+// -----------------------------------------------------------------------------
 
 model SalaryAdvance {
   id         String   @id @default(uuid())
@@ -101,9 +312,16 @@ model SalaryAdvance {
   notes      String?
   deducted   Boolean  @default(false)
   payrollId  String?
-  createdAt  DateTime @default(now())
 
-  employee Employee @relation(fields: [employeeId], references: [id])
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   payroll  Payroll? @relation(fields: [payrollId], references: [id])
 
   @@index([employeeId])
@@ -112,6 +330,7 @@ model SalaryAdvance {
 
 model Payroll {
   id              String    @id @default(uuid())
+  companyId       String
   employeeId      String
   periodStart     DateTime
   periodEnd       DateTime
@@ -125,87 +344,65 @@ model Payroll {
   status          String    @default("PENDING") // PENDING | PAID
   locked          Boolean   @default(false)
   lockedAt        DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  company  Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employee Employee        @relation(fields: [employeeId], references: [id])
   advances SalaryAdvance[]
 
+  @@index([companyId])
+  @@index([companyId, periodStart, periodEnd])
   @@index([employeeId])
-  @@index([employeeId, periodStart, periodEnd])
   @@index([status])
-  @@index([locked])
 }
 
-model User {
-  id           String    @id @default(uuid())
-  username     String    @unique
-  passwordHash String
-  role         String    // ADMIN | SUPERVISOR | OPERATOR
-  status       String    @default("ACTIVE") // ACTIVE | INACTIVE
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  auditLogs     AuditLog[]
-  notifications Notification[]
-  refreshTokens RefreshToken[]
-}
-
-model RefreshToken {
-  id        String    @id @default(uuid())
-  token     String    @unique
-  userId    String
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([token])
-  @@index([userId])
-}
+// -----------------------------------------------------------------------------
+// System Logs & Notifications
+// -----------------------------------------------------------------------------
 
 model AuditLog {
   id            String   @id @default(uuid())
+  companyId     String
   entity        String
   entityId      String
   action        String
   userId        String
-  previousValue String?  // JSON serialized
-  newValue      String?  // JSON serialized
+  previousValue String? // JSON serialized
+  newValue      String? // JSON serialized
   timestamp     DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
 
-  @@index([entity, entityId])
+  @@index([companyId])
+  @@index([companyId, entity, entityId])
   @@index([userId])
   @@index([timestamp])
-  @@index([action])
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
+  companyId String
   type      String
   severity  String
   title     String
   message   String
-  read      Boolean  @default(false)
-  userId    String?
+  read      Boolean @default(false)
+  userId    String? // If null, it's a company-wide notification
+
   createdAt DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
 
+  @@index([companyId])
   @@index([userId, read])
   @@index([createdAt])
-}
-
-model Settings {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  value     String   // JSON serialized
-  updatedAt DateTime @updatedAt
-  updatedBy String
-
-  @@index([key])
 }

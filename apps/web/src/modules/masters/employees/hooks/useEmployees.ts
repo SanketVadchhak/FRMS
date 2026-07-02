@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
-import type { EmployeeFormValues } from '@frms/shared';
-import { employeeService } from '../services/employee.mock';
+import type { EmployeeFormValues, EmployeeCreateInput, EmployeeUpdateInput } from '@frms/shared';
+import { employeeService } from '../services/employee.service';
 import { toast } from 'sonner';
 
 export function useEmployees() {
@@ -14,7 +14,7 @@ export function useEmployees() {
 export function useEmployee(id?: string) {
   return useQuery({
     queryKey: QUERY_KEYS.EMPLOYEES.DETAIL(id as string),
-    queryFn: () => employeeService.getEmployeeById(id as string),
+    queryFn: () => employeeService.getEmployee(id as string),
     enabled: !!id,
   });
 }
@@ -23,7 +23,7 @@ export function useCreateEmployee() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: EmployeeFormValues) => employeeService.createEmployee(data),
+    mutationFn: (data: EmployeeFormValues) => employeeService.createEmployee(data as EmployeeCreateInput),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EMPLOYEES.LIST });
       toast.success('Employee created successfully');
@@ -40,7 +40,7 @@ export function useUpdateEmployee() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<EmployeeFormValues> }) => 
-      employeeService.updateEmployee(id, data),
+      employeeService.updateEmployee(id, data as EmployeeUpdateInput),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EMPLOYEES.LIST });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EMPLOYEES.DETAIL(data.id!) });
@@ -58,11 +58,10 @@ export function useChangeEmployeeStatus() {
 
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'ACTIVE' | 'INACTIVE' }) => 
-      status === 'ACTIVE' ? employeeService.activateEmployee(id) : employeeService.deactivateEmployee(id),
+      employeeService.updateEmployee(id, { status } as EmployeeUpdateInput),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EMPLOYEES.LIST });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EMPLOYEES.DETAIL(data.id!) });
-      toast.success(`Employee ${data.status === 'ACTIVE' ? 'activated' : 'deactivated'} successfully`);
+      toast.success(`Employee ${data?.status === 'ACTIVE' ? 'activated' : 'deactivated'} successfully`);
     },
     onError: (error) => {
       toast.error('Failed to change employee status');

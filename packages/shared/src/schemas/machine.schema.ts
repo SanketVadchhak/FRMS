@@ -13,3 +13,9 @@ export const machineSchema = z.object({
 });
 
 export type Machine = z.infer<typeof machineSchema>;
+
+export const createMachineSchema = machineSchema.omit({ id: true });
+export const updateMachineSchema = machineSchema.partial();
+
+export type MachineCreateInput = z.infer<typeof createMachineSchema>;
+export type MachineUpdateInput = z.infer<typeof updateMachineSchema>;

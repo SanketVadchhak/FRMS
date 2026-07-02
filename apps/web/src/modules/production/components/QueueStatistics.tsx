@@ -5,7 +5,8 @@ import { useProductionEntries } from '../hooks/useProduction';
 import { ProductionStatus } from '@frms/shared';
 
 export function QueueStatistics() {
-  const { data: entries = [] } = useProductionEntries();
+  const { data: rawEntries } = useProductionEntries();
+  const entries = rawEntries || [];
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0] || '', []);
 

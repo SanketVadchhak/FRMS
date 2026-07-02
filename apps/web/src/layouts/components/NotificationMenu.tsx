@@ -43,9 +43,13 @@ export function NotificationMenu() {
     });
   };
 
-  const { data: entries = [] } = useProductionEntries();
-  const { data: employees = [] } = useEmployees();
-  const { data: machines = [] } = useMachines();
+  const { data: rawEntries } = useProductionEntries();
+  const { data: rawEmployees } = useEmployees();
+  const { data: rawMachines } = useMachines();
+
+  const entries = rawEntries || [];
+  const employees = rawEmployees || [];
+  const machines = rawMachines || [];
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -62,9 +66,9 @@ export function NotificationMenu() {
   const now = new Date();
 
   // 1. Pending Approvals
-  const pendingEntries = entries.filter((e) => e.status === ProductionStatus.PENDING);
+  const pendingEntries = entries.filter((e: any) => e.status === ProductionStatus.PENDING);
   pendingEntries.forEach(entry => {
-    const emp = employees.find(e => e.id === entry.employeeId);
+    const emp = employees.find((e: any) => e.id === entry.employeeId);
     const empName = emp?.name || entry.employeeId;
     notifications.push({
       id: `pending-${entry.id}`,
@@ -104,12 +108,12 @@ export function NotificationMenu() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]!;
   
-  const recentEntries = entries.filter(e => e.date >= sevenDaysAgoStr);
-  const activeEmployeeIds = new Set(recentEntries.map(e => e.employeeId));
-  const activeMachineIds = new Set(recentEntries.map(e => e.machineId));
+  const recentEntries = entries.filter((e: any) => e.date >= sevenDaysAgoStr);
+  const activeEmployeeIds = new Set(recentEntries.map((e: any) => e.employeeId));
+  const activeMachineIds = new Set(recentEntries.map((e: any) => e.machineId));
 
-  const inactiveEmployees = employees.filter(emp => !activeEmployeeIds.has(emp.id!));
-  const inactiveMachines = machines.filter(mac => !activeMachineIds.has(mac.id!));
+  const inactiveEmployees = employees.filter((emp: any) => !activeEmployeeIds.has(emp.id!));
+  const inactiveMachines = machines.filter((mac: any) => !activeMachineIds.has(mac.id!));
 
   if (inactiveEmployees.length > 0) {
     notifications.push({

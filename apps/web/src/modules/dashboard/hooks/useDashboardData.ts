@@ -16,8 +16,11 @@ export interface DashboardAlert {
 
 export function useDashboardData() {
   const navigate = useNavigate();
-  const { data: productionEntries = [], isLoading: isLoadingProduction } = useProductionEntries();
-  const { data: employees = [], isLoading: isLoadingEmployees } = useEmployees();
+  const { data: rawProductionEntries, isLoading: isLoadingProduction } = useProductionEntries();
+  const { data: rawEmployees, isLoading: isLoadingEmployees } = useEmployees();
+
+  const productionEntries = rawProductionEntries || [];
+  const employees = rawEmployees || [];
 
   const isLoading = isLoadingProduction || isLoadingEmployees;
 

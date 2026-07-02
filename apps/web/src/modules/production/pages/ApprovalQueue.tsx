@@ -21,8 +21,11 @@ import { RejectDialog } from '../components/RejectDialog';
 import { formatProductionDateTime } from '@/utils';
 
 export function ApprovalQueue() {
-  const { data: entries = [], isLoading } = useProductionEntries();
-  const { data: employees = [] } = useEmployees();
+  const { data: rawEntries, isLoading } = useProductionEntries();
+  const { data: rawEmployees } = useEmployees();
+
+  const entries = rawEntries || [];
+  const employees = rawEmployees || [];
 
   const bulkApproveMutation = useBulkApproveProductionEntries();
   const approveMutation = useApproveProductionEntry();

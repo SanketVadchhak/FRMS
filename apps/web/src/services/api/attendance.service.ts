@@ -1,18 +1,22 @@
-import type { AttendanceFilters, AttendanceRecord } from '@frms/shared';
-import { attendanceMock } from '../mocks/attendance.mock';
+import { apiClient } from '@/lib/apiClient';
+
+export interface AttendanceFilter {
+  date?: string;
+  month?: string;
+  employeeId?: string;
+}
 
 export const attendanceService = {
-  /**
-   * Get attendance records (dynamically generated from production).
-   */
-  async getAttendance(filters: AttendanceFilters): Promise<AttendanceRecord[]> {
-    return attendanceMock.getAttendance(filters);
+  getAttendance: async (_filters?: AttendanceFilter) => {
+    return apiClient.get<any[]>('/attendance').catch(() => []);
   },
 
-  /**
-   * Get dashboard statistics for a specific date.
-   */
-  async getDashboardStats(date: string) {
-    return attendanceMock.getDashboardStats(date);
+  getDashboardStats: async (_date?: string) => {
+    return apiClient.get<any>('/attendance/stats').catch(() => ({
+      present: 0,
+      absent: 0,
+      halfDay: 0,
+      late: 0,
+    }));
   },
 };

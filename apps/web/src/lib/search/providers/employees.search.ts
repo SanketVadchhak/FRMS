@@ -1,6 +1,6 @@
 import { User } from 'lucide-react';
 import type { SearchProvider, GlobalSearchResult } from '../searchEngine';
-import { employeeService } from '@/modules/masters/employees/services/employee.mock';
+import { employeeService } from '@/modules/masters/employees/services/employee.service';
 import { ROUTES } from '@/constants/routes';
 
 export const employeesSearchProvider: SearchProvider = {

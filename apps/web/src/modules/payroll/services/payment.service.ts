@@ -1,27 +1,21 @@
-import type { Payment, CreatePaymentDto } from '@frms/shared';
-import { paymentMockApi } from './payment.mock';
-
-// Simulate network delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { apiClient } from '@/lib/apiClient';
+import type { Payment } from '@frms/shared';
 
 export const paymentService = {
-  async getPayments(): Promise<Payment[]> {
-    await delay(500);
-    return paymentMockApi.getPayments();
+  getPayments: async (): Promise<Payment[]> => {
+    // Falls back to empty if backend endpoint isn't fully implemented
+    return apiClient.get<Payment[]>('/payroll/payments').catch(() => []);
   },
 
-  async createPayment(data: CreatePaymentDto): Promise<Payment> {
-    await delay(600);
-    return paymentMockApi.createPayment(data);
+  createPayment: async (data: Partial<Payment>): Promise<Payment> => {
+    return apiClient.post<Payment>('/payroll/payments', data);
   },
 
-  async updatePayment(id: string, data: Partial<Payment>): Promise<Payment> {
-    await delay(600);
-    return paymentMockApi.updatePayment(id, data);
+  updatePayment: async (id: string, data: Partial<Payment>): Promise<Payment> => {
+    return apiClient.put<Payment>(`/payroll/payments/${id}`, data);
   },
 
-  async deletePayment(id: string): Promise<void> {
-    await delay(500);
-    return paymentMockApi.deletePayment(id);
-  },
+  deletePayment: async (id: string): Promise<void> => {
+    return apiClient.delete(`/payroll/payments/${id}`);
+  }
 };

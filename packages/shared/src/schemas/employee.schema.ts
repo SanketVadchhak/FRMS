@@ -20,3 +20,6 @@ export const employeeSchema = z.object({
 
 export const createEmployeeSchema = employeeSchema.omit({ id: true });
 export const updateEmployeeSchema = employeeSchema.partial();
+
+export type EmployeeCreateInput = z.infer<typeof createEmployeeSchema>;
+export type EmployeeUpdateInput = z.infer<typeof updateEmployeeSchema>;

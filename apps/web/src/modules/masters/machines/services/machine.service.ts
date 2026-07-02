@@ -1,6 +1,20 @@
-import { mockMachineService } from './machine.mock';
+import { apiClient } from '@/lib/apiClient';
+import type { Machine, MachineCreateInput, MachineUpdateInput } from '@frms/shared';
 
+export const machineService = {
+  getMachines: async (): Promise<Machine[]> => {
+    return apiClient.get<Machine[]>('/machines');
+  },
 
-// Environment variable toggle for real API vs mock could go here.
-// For now, returning mock service.
-export const machineService = mockMachineService;
+  createMachine: async (data: MachineCreateInput): Promise<Machine> => {
+    return apiClient.post<Machine>('/machines', data);
+  },
+
+  updateMachine: async (id: string, data: MachineUpdateInput): Promise<Machine> => {
+    return apiClient.put<Machine>(`/machines/${id}`, data);
+  },
+
+  deleteMachine: async (id: string): Promise<void> => {
+    return apiClient.delete(`/machines/${id}`);
+  }
+};

@@ -1,10 +1,24 @@
-import type { Employee, EmployeeFormValues } from '@frms/shared';
+import { apiClient } from '@/lib/apiClient';
+import type { Employee, EmployeeCreateInput, EmployeeUpdateInput } from '@frms/shared';
 
-export interface EmployeeService {
-  getEmployees(): Promise<Employee[]>;
-  getEmployeeById(id: string): Promise<Employee>;
-  createEmployee(data: EmployeeFormValues): Promise<Employee>;
-  updateEmployee(id: string, data: Partial<EmployeeFormValues>): Promise<Employee>;
-  deactivateEmployee(id: string): Promise<Employee>;
-  activateEmployee(id: string): Promise<Employee>;
-}
+export const employeeService = {
+  getEmployees: async (): Promise<Employee[]> => {
+    return apiClient.get<Employee[]>('/employees');
+  },
+
+  getEmployee: async (id: string): Promise<Employee> => {
+    return apiClient.get<Employee>(`/employees/${id}`);
+  },
+
+  createEmployee: async (data: EmployeeCreateInput): Promise<Employee> => {
+    return apiClient.post<Employee>('/employees', data);
+  },
+
+  updateEmployee: async (id: string, data: EmployeeUpdateInput): Promise<Employee> => {
+    return apiClient.put<Employee>(`/employees/${id}`, data);
+  },
+
+  deleteEmployee: async (id: string): Promise<void> => {
+    return apiClient.delete(`/employees/${id}`);
+  }
+};

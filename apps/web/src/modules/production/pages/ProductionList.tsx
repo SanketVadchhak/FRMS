@@ -19,8 +19,11 @@ import { formatProductionDateTime } from '@/utils';
 
 export function ProductionList() {
   const navigate = useNavigate();
-  const { data: entries = [], isLoading } = useProductionEntries();
-  const { data: employees = [] } = useEmployees();
+  const { data: rawEntries, isLoading } = useProductionEntries();
+  const { data: rawEmployees } = useEmployees();
+
+  const entries = rawEntries || [];
+  const employees = rawEmployees || [];
 
   const location = useLocation();
   const [filters, setFilters] = useState<ProductionFilters>(() => ({

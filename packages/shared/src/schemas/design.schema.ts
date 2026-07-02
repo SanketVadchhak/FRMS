@@ -13,3 +13,9 @@ export const designSchema = z.object({
 });
 
 export type Design = z.infer<typeof designSchema>;
+
+export const createDesignSchema = designSchema.omit({ id: true });
+export const updateDesignSchema = designSchema.partial();
+
+export type DesignCreateInput = z.infer<typeof createDesignSchema>;
+export type DesignUpdateInput = z.infer<typeof updateDesignSchema>;

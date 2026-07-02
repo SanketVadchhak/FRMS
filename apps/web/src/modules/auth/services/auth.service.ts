@@ -1,30 +1,35 @@
-import { mockAuthApi } from './auth.mock';
-import type { LoginInput, ChangePasswordInput } from '../schemas/auth.schema';
+import { apiClient } from '@/lib/apiClient';
+import type { LoginInput } from '../schemas/auth.schema';
 import type { User } from '@frms/shared';
+
+// Fastify returns { user, token } on login
+interface LoginResponse {
+  user: User;
+  token: string;
+}
 
 export const authService = {
   login: async (credentials: LoginInput): Promise<{ user: User; accessToken: string }> => {
-    // In production, this would be an axios/fetch call to /api/v1/auth/login
-    return mockAuthApi.login(credentials);
+    const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
+    return {
+      user: response.user,
+      accessToken: response.token,
+    };
   },
 
-  logout: async (username: string): Promise<void> => {
-    // In production, /api/v1/auth/logout
-    return mockAuthApi.logout(username);
+  logout: async (_username?: string): Promise<void> => {
+    await apiClient.post('/auth/logout', {});
   },
 
-  updateActivity: async (username: string): Promise<void> => {
-    // In production, this might be handled via middleware or a lightweight ping
-    return mockAuthApi.updateActivity(username);
+  changePassword: async (_username: string, data: any): Promise<void> => {
+    await apiClient.post('/auth/password', data);
   },
 
-  changePassword: async (username: string, data: ChangePasswordInput): Promise<void> => {
-    // In production, /api/v1/auth/password
-    return mockAuthApi.changePassword(username, data.currentPassword, data.newPassword);
+  logSessionExpired: async (_username?: string): Promise<void> => {
+    // Optional analytics/logging
   },
 
-  logSessionExpired: async (username: string): Promise<void> => {
-    // Inform backend that frontend dropped the session
-    return mockAuthApi.logSessionExpired(username);
-  }
+  updateActivity: async (_username?: string): Promise<void> => {
+    // Optional analytics/logging
+  },
 };

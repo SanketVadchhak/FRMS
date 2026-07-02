@@ -60,8 +60,11 @@ export function ProductionEntry() {
   const isEditing = Boolean(id);
 
   const { data: entries } = useProductionEntries();
-  const { data: employees = [] } = useEmployees();
-  const { data: machines = [] } = useMachines();
+  const { data: rawEmployees } = useEmployees();
+  const { data: rawMachines } = useMachines();
+
+  const employees = rawEmployees || [];
+  const machines = rawMachines || [];
 
   const createMutation = useCreateProductionEntry();
   const updateMutation = useUpdateProductionEntry();

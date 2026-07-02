@@ -20,6 +20,7 @@ export function ChartTopEmployees() {
 
     const result = Object.entries(employeeVolume)
       .map(([empId, volume]) => {
+
         const emp = employees.find(e => e.id === empId);
         return {
           name: emp ? emp.name : empId,

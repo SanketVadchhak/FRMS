@@ -8,10 +8,15 @@ import type { PayrollLedgerSummary, PayrollTransaction } from '@frms/shared';
 import { PaymentEffect, PaymentType, ProductionStatus } from '@frms/shared';
 
 export function usePayrollLedger(periodStart: string | null, periodEnd: string | null) {
-  const { data: employees = [], isLoading: loadingEmp } = useEmployees();
-  const { data: payrolls = [], isLoading: loadingPayrolls } = usePayrolls();
-  const { data: payments = [], isLoading: loadingPayments } = usePayments();
-  const { data: productions = [], isLoading: loadingProd } = useProductionEntries();
+  const { data: rawEmployees, isLoading: loadingEmp } = useEmployees();
+  const { data: rawPayrolls, isLoading: loadingPayrolls } = usePayrolls();
+  const { data: rawPayments, isLoading: loadingPayments } = usePayments();
+  const { data: rawProductions, isLoading: loadingProd } = useProductionEntries();
+
+  const employees = rawEmployees || [];
+  const payrolls = rawPayrolls || [];
+  const payments = rawPayments || [];
+  const productions = rawProductions || [];
 
   const isLoading = loadingEmp || loadingPayrolls || loadingPayments || loadingProd;
 

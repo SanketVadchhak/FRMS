@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "builds": [
+    {
+      "src": "apps/api/src/serverless.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/apps/api/src/serverless.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/apps/web/package.json"
+    }
+  ]
+}
