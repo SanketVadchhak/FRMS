@@ -15,7 +15,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,css,json,md}\" --ignore-path .prettierignore",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "db:push": "npm run db:push --workspace=@frms/api",
     "db:migrate": "npm run db:migrate --workspace=@frms/api"
   },
