@@ -1,15 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'http';
+import { app, registerPlugins } from './index';
 
-// Cache the Fastify instance across warm invocations in the same Lambda container
+// Cache the startup promise — reused across warm Lambda invocations
 let appReady: Promise<void> | null = null;
 
 async function getApp() {
-  const { app, registerPlugins } = await import('./index');
-
   if (!appReady) {
     appReady = registerPlugins().then(() => app.ready());
   }
-
   await appReady;
   return app;
 }
@@ -17,8 +15,8 @@ async function getApp() {
 // Export a handler for Vercel Serverless Functions
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
-    const app = await getApp();
-    app.server.emit('request', req, res);
+    const fastify = await getApp();
+    fastify.server.emit('request', req, res);
   } catch (err: any) {
     console.error('SERVERLESS STARTUP ERROR:', err);
     res.statusCode = 500;
