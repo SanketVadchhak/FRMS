@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "build": "npm run db:push --workspace=api && turbo run build",
+    "build": "npm run db:push --workspace=api && turbo run build && rm -rf public && cp -r apps/web/dist public",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
