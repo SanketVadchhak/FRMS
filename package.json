@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "build": "npm run db:push --workspace=api && turbo run build --no-cache && rm -rf vercel-dist && cp -r apps/web/dist vercel-dist",
+    "build": "npm run db:push --workspace=api && turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
