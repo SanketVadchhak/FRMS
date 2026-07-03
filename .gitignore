@@ -42,3 +42,11 @@ apps/api/prisma/*.db-journal
 
 # coverage
 coverage
+
+# TypeScript build info (generated, not source)
+*.tsbuildinfo
+
+# Lint output artifacts
+eslint_output.txt
+lint-compact.txt
+lint-out.txt

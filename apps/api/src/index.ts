@@ -88,17 +88,13 @@ async function registerPlugins() {
   }
 }
 
-// Register plugins globally so they are ready for serverless
-registerPlugins().catch(err => {
-  fastify.log.error(err);
-  // Do not process.exit(1) here! We want serverless.ts to catch it!
-});
+export { registerPlugins };
+
+export const app = fastify;
 
 async function start() {
   try {
-    // Start Server
     await fastify.listen({ port: env.PORT, host: env.HOST });
-    
     fastify.log.info(`Server listening on http://${env.HOST}:${env.PORT}`);
   } catch (err) {
     fastify.log.error(err);
@@ -106,10 +102,15 @@ async function start() {
   }
 }
 
-export const app = fastify;
-
+// Only auto-start in non-serverless environments
 if (!process.env.VERCEL) {
-  start();
+  // Register plugins then start listening
+  registerPlugins()
+    .then(() => start())
+    .catch(err => {
+      fastify.log.error(err);
+      process.exit(1);
+    });
 }
 
 // Handle Graceful Shutdown
