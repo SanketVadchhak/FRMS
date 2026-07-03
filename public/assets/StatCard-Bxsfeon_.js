@@ -1,6 +1,0 @@
-import{l as x,j as e,k as i}from"./index-Dqsi_srf.js";/**
- * @license lucide-react v0.379.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const m=x("CircleAlert",[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["line",{x1:"12",x2:"12",y1:"8",y2:"12",key:"1pkeuh"}],["line",{x1:"12",x2:"12.01",y1:"16",y2:"16",key:"4dfq90"}]]);function o({title:r,value:a,description:t,icon:l,trend:s,className:c}){return e.jsxs("div",{className:i("rounded-xl border bg-card text-card-foreground shadow-sm p-6",c),children:[e.jsxs("div",{className:"flex flex-row items-center justify-between space-y-0 pb-2",children:[e.jsx("h3",{className:"tracking-tight text-sm font-medium",children:r}),l&&e.jsx("div",{className:"text-muted-foreground",children:l})]}),e.jsxs("div",{children:[e.jsx("div",{className:"text-2xl font-bold",children:a}),t&&e.jsx("p",{className:"text-xs text-muted-foreground mt-1",children:t}),s&&e.jsxs("p",{className:"text-xs text-muted-foreground mt-1",children:[e.jsxs("span",{className:i("font-medium mr-1",s.isPositive===!0?"text-emerald-500":s.isPositive===!1?"text-destructive":""),children:[s.showPlus&&s.isPositive?"+":"",s.value]}),s.label]})]})]})}export{m as C,o as S};

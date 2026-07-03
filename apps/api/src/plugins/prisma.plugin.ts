@@ -13,7 +13,10 @@ const prismaPlugin: FastifyPluginAsync = async (fastify) => {
     log: ['error', 'warn'],
   });
 
-  await prisma.$connect();
+  // Do NOT call prisma.$connect() here.
+  // Prisma auto-connects on the first query, which is much better for
+  // serverless cold starts — avoids a blocking SSL handshake to Neon
+  // before any request is processed.
 
   fastify.decorate('prisma', prisma);
 
