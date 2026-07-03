@@ -1,16 +1,6 @@
 {
   "version": 2,
-  "functions": {
-    "apps/api/src/serverless.ts": {
-      "memory": 512,
-      "maxDuration": 30,
-      "includeFiles": "packages/shared/src/**"
-    }
-  },
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/apps/api/src/serverless.ts"
-    }
+    { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
