@@ -20,7 +20,6 @@ import { auditlogRoutes } from './modules/auditlog/auditlog.routes';
 const fastify = Fastify({
   logger: {
     level: env.LOG_LEVEL,
-    transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
   },
 });
 
