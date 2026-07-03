@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "postbuild": "rm -rf ../../public && cp -r dist ../../public",
+    "postbuild": "rm -rf public && rm -rf ../../public && cp -r dist public && cp -r dist ../../public",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest run",
