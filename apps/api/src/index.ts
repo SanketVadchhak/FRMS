@@ -103,8 +103,7 @@ async function start() {
 }
 
 // Only auto-start in non-serverless environments
-if (!process.env.VERCEL) {
-  // Register plugins then start listening
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   registerPlugins()
     .then(() => start())
     .catch(err => {
