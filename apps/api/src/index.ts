@@ -36,6 +36,11 @@ fastify.setErrorHandler((error, request, reply) => {
     return reply.status(400).send(errorResponse('Validation Error', 'VALIDATION_ERROR', error.errors));
   }
 
+  // Fastify route not found error
+  if (error.statusCode === 404) {
+    return reply.status(404).send(errorResponse('Not Found', 'NOT_FOUND'));
+  }
+
   // Fastify rate limit error
   if (error.statusCode === 429) {
     return reply.status(429).send(errorResponse('Too many requests', 'RATE_LIMIT_EXCEEDED'));
