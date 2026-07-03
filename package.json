@@ -11,13 +11,14 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "vercel-build": "npm run build --workspace=apps/api",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,css,json,md}\" --ignore-path .prettierignore",
     "prepare": "husky || true",
-    "db:push": "npm run db:push --workspace=api",
-    "db:migrate": "npm run db:migrate --workspace=api"
+    "db:push": "npm run db:push --workspace=apps/api",
+    "db:migrate": "npm run db:migrate --workspace=apps/api"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.62.0",

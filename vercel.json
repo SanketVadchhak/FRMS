@@ -1,4 +1,16 @@
 {
   "version": 2,
-  "comment": "This monorepo root is NOT deployed directly. Deploy apps/web and apps/api as separate Vercel projects each pointing to their own subdirectory."
+  "functions": {
+    "apps/api/src/serverless.ts": {
+      "memory": 512,
+      "maxDuration": 30,
+      "includeFiles": "packages/shared/src/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/apps/api/src/serverless.ts"
+    }
+  ]
 }
