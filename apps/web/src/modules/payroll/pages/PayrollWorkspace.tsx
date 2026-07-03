@@ -316,7 +316,7 @@ export function PayrollWorkspace() {
 
                                 {/* History */}
                                 <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold border-b pb-2">History & Actions</h4>
+                                  <h4 className="text-sm font-semibold border-b pb-2">History & Actions </h4>
                                   <button onClick={() => setViewLedgerEmp(row)} className="text-sm text-primary hover:underline text-left block w-full">View Permanent Ledger</button>
                                   <button onClick={() => downloadPayslipPDF(row, periodStart, periodEnd)} className="text-sm text-primary hover:underline text-left block w-full">Download Payslip</button>
                                 </div>
