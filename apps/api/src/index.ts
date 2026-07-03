@@ -92,7 +92,7 @@ async function registerPlugins() {
 // Register plugins globally so they are ready for serverless
 registerPlugins().catch(err => {
   fastify.log.error(err);
-  process.exit(1);
+  // Do not process.exit(1) here! We want serverless.ts to catch it!
 });
 
 async function start() {

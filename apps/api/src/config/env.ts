@@ -18,4 +18,14 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
 });
 
-export const env = envSchema.parse(process.env);
+let parsedEnv: any;
+try {
+  parsedEnv = envSchema.parse(process.env);
+} catch (err) {
+  console.error('ZOD ENV VALIDATION ERROR:', err);
+  // We don't throw here to prevent top-level module crash. 
+  // We let it pass, so the serverless function can boot and send the error to the browser.
+  parsedEnv = process.env; // fallback to raw env so it doesn't immediately crash
+}
+
+export const env = parsedEnv as z.infer<typeof envSchema>;
