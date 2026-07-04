@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.62.0",
