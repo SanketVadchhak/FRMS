@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const envSchema = z.object({
   DATABASE_URL: z.string().default('postgresql://localhost:5432/frms'),
