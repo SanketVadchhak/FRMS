@@ -2,10 +2,11 @@ import { apiClient } from '@/lib/apiClient';
 import type { LoginInput } from '../schemas/auth.schema';
 import type { User } from '@frms/shared';
 
-// Fastify returns { user, token } on login
+// Fastify returns { user, accessToken, refreshToken } on login
 interface LoginResponse {
   user: User;
-  token: string;
+  token?: string;
+  accessToken?: string;
 }
 
 export const authService = {
@@ -13,7 +14,7 @@ export const authService = {
     const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
     return {
       user: response.user,
-      accessToken: response.token,
+      accessToken: response.accessToken || response.token || '',
     };
   },
 
