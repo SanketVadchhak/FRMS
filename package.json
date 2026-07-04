@@ -21,6 +21,10 @@
     "db:push": "npm run db:push --workspace=apps/api",
     "db:migrate": "npm run db:migrate --workspace=apps/api"
   },
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "prisma": "^5.14.0"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
