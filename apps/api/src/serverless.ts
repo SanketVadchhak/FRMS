@@ -26,7 +26,7 @@ function applyCorsHeaders(req: IncomingMessage, res: ServerResponse) {
 }
 
 // Export a handler for Vercel Serverless Functions
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+export default async function handler(req: any, res: any) {
   // Always send CORS headers — even if Fastify crashes during startup.
   // Without this, a startup error produces no CORS headers and the browser
   // reports a CORS error instead of the real underlying error.
@@ -41,7 +41,36 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
   try {
     const fastify = await getApp();
-    fastify.server.emit('request', req, res);
+
+    // Collect request body if present
+    let payload: any = undefined;
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      if (req.body !== undefined) {
+        payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+      } else {
+        payload = await new Promise((resolve) => {
+          let data = '';
+          req.on('data', (chunk: any) => { data += chunk; });
+          req.on('end', () => resolve(data));
+          req.on('error', () => resolve(undefined));
+        });
+      }
+    }
+
+    const response = await fastify.inject({
+      method: req.method,
+      url: req.url || '/',
+      headers: req.headers,
+      payload,
+    });
+
+    res.statusCode = response.statusCode;
+    for (const [key, val] of Object.entries(response.headers)) {
+      if (val !== undefined) {
+        res.setHeader(key, val as any);
+      }
+    }
+    res.end(response.rawPayload);
   } catch (err: any) {
     console.error('SERVERLESS STARTUP ERROR:', err);
     res.statusCode = 500;
