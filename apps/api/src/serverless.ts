@@ -12,40 +12,36 @@ async function getApp() {
   return app;
 }
 
-function applyCorsHeaders(req: IncomingMessage, res: ServerResponse) {
-  const origin = req.headers['origin'] || '*';
-  const allowedOrigins = (process.env.CORS_ORIGIN || '*').split(',').map(o => o.trim());
-  const resolvedOrigin = allowedOrigins.includes('*') || allowedOrigins.includes(origin)
-    ? origin
-    : allowedOrigins[0] ?? '*';
-
-  res.setHeader('Access-Control-Allow-Origin', resolvedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+function applyCorsHeaders(req: any, res: any) {
+  try {
+    const origin = req?.headers?.origin || req?.headers?.Origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  } catch (err) {
+    console.error('Error applying CORS headers:', err);
+  }
 }
 
 // Export a handler for Vercel Serverless Functions
 export default async function handler(req: any, res: any) {
-  // Always send CORS headers — even if Fastify crashes during startup.
-  // Without this, a startup error produces no CORS headers and the browser
-  // reports a CORS error instead of the real underlying error.
-  applyCorsHeaders(req, res);
-
-  // Handle OPTIONS preflight immediately — no need to boot Fastify for this
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-
   try {
+    applyCorsHeaders(req, res);
+
+    if (req?.method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     const fastify = await getApp();
 
     // Collect request body if present
     let payload: any = undefined;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
-      if (req.body !== undefined) {
+      if (req.body !== undefined && req.body !== null) {
         payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
       } else {
         payload = await new Promise((resolve) => {
@@ -60,26 +56,31 @@ export default async function handler(req: any, res: any) {
     const response = await fastify.inject({
       method: req.method,
       url: req.url || '/',
-      headers: req.headers,
+      headers: req.headers || {},
       payload,
     });
 
     res.statusCode = response.statusCode;
-    for (const [key, val] of Object.entries(response.headers)) {
+    for (const [key, val] of Object.entries(response.headers || {})) {
       if (val !== undefined) {
         res.setHeader(key, val as any);
       }
     }
     res.end(response.rawPayload);
   } catch (err: any) {
-    console.error('SERVERLESS STARTUP ERROR:', err);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(
-      JSON.stringify({
-        error: 'SERVERLESS_STARTUP_ERROR',
-        message: err?.message || String(err),
-      }),
-    );
+    console.error('SERVERLESS RUNTIME ERROR:', err);
+    try {
+      applyCorsHeaders(req, res);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          error: 'SERVERLESS_RUNTIME_ERROR',
+          message: err?.message || String(err),
+        }),
+      );
+    } catch (fallbackErr) {
+      console.error('Fatal fallback error:', fallbackErr);
+    }
   }
 }

@@ -55,8 +55,10 @@ async function registerPlugins() {
   try {
     // Register Plugins
     await fastify.register(cors, {
-      origin: env.CORS_ORIGIN.split(','),
+      origin: true,
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     });
 
     await fastify.register(rateLimit, {
