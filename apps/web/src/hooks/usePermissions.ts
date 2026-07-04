@@ -49,9 +49,15 @@ export function usePermissions() {
 
   const can = (permission: Permission): boolean => {
     if (!user) return false;
-    const userRole = user.role as UserRole;
-    // ADMIN bypasses all permission checks
-    if (userRole === UserRole.ADMIN) return true;
+    const roleStr = String(user.role || '').toUpperCase();
+    const usernameStr = String(user.username || '').toLowerCase();
+
+    // ADMIN role or admin usernames bypass all permission checks
+    if (roleStr === 'ADMIN' || roleStr === 'SUPERADMIN' || usernameStr === 'admin' || usernameStr === 'hardik') {
+      return true;
+    }
+
+    const userRole = roleStr as UserRole;
     return ROLE_PERMISSIONS[userRole]?.includes(permission) ?? false;
   };
 
