@@ -24,7 +24,7 @@ const fastify = Fastify({
 });
 
 // Global Error Handler
-fastify.setErrorHandler((error, request, reply) => {
+fastify.setErrorHandler((error: any, request, reply) => {
   fastify.log.error(error);
 
   if (error instanceof AppError) {
@@ -48,7 +48,10 @@ fastify.setErrorHandler((error, request, reply) => {
   return reply.status(500).send(errorResponse('Internal Server Error', 'INTERNAL_SERVER_ERROR'));
 });
 
+let pluginsRegistered = false;
 async function registerPlugins() {
+  if (pluginsRegistered) return;
+  pluginsRegistered = true;
   try {
     // Register Plugins
     await fastify.register(cors, {
