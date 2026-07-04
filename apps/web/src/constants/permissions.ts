@@ -2,14 +2,26 @@ export const PERMISSIONS = {
   EMPLOYEES_READ: 'employees:read',
   EMPLOYEES_WRITE: 'employees:write',
   EMPLOYEES_DELETE: 'employees:delete',
+  MACHINES_READ: 'machines:read',
+  MACHINES_WRITE: 'machines:write',
+  MACHINES_DELETE: 'machines:delete',
+  DESIGNS_READ: 'designs:read',
+  DESIGNS_WRITE: 'designs:write',
+  DESIGNS_DELETE: 'designs:delete',
+  USERS_READ: 'users:read',
+  USERS_WRITE: 'users:write',
+  USERS_DELETE: 'users:delete',
   USERS_MANAGE: 'users:manage',
   SETTINGS_READ: 'settings:read',
   SETTINGS_WRITE: 'settings:write',
   PRODUCTION_READ: 'production:read',
   PRODUCTION_WRITE: 'production:write',
+  PRODUCTION_DELETE: 'production:delete',
   PRODUCTION_APPROVE: 'production:approve',
   PRODUCTION_MANAGE: 'production:manage',
-  // See docs/SECURITY.md for full list
+  PAYROLL_READ: 'payroll:read',
+  PAYROLL_WRITE: 'payroll:write',
+  NOTIFICATIONS_MANAGE: 'notifications:manage',
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
