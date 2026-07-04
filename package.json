@@ -11,8 +11,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "postinstall": "npm run build --workspace=packages/shared && npx prisma generate --schema=apps/api/prisma/schema.prisma",
-    "vercel-build": "npm run build --workspace=packages/shared && npx prisma generate --schema=apps/api/prisma/schema.prisma",
+    "postinstall": "npx tsc --project packages/shared/tsconfig.json && npx prisma generate --schema=apps/api/prisma/schema.prisma",
+    "vercel-build": "npx tsc --project packages/shared/tsconfig.json && npx prisma generate --schema=apps/api/prisma/schema.prisma",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
