@@ -17,7 +17,7 @@ export function RoleMatrix() {
       <div>
         <h3 className="text-lg font-medium">Roles & Permissions</h3>
         <p className="text-sm text-muted-foreground">
-          Formal definitions of system access levels
+          Formal definitions of system access levels 
         </p>
       </div>
 
