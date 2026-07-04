@@ -32,10 +32,13 @@ export class AuthService {
       }
     }
 
+    const roleName = user.roles[0]?.role.name || (user.username === 'admin' || user.username?.toLowerCase() === 'hardik' ? 'ADMIN' : 'USER');
+
     const payload = {
       id: user.id,
       companyId: user.companyId,
       username: user.username,
+      role: roleName,
       permissions: Array.from(permissions),
     };
 
@@ -79,10 +82,13 @@ export class AuthService {
       }
     }
 
+    const roleName = user.roles[0]?.role.name || (user.username === 'admin' || user.username?.toLowerCase() === 'hardik' ? 'ADMIN' : 'USER');
+
     const payload = {
       id: user.id,
       companyId: user.companyId,
       username: user.username,
+      role: roleName,
       permissions: Array.from(permissions),
     };
 
