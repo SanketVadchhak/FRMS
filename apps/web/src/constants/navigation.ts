@@ -5,6 +5,7 @@ import {
   Banknote,
   Settings,
   ClipboardCheck,
+  Cog,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ROUTES } from './routes';
@@ -44,6 +45,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     path: ROUTES.MASTERS.EMPLOYEES,
     icon: HardHat,
     permission: PERMISSIONS.EMPLOYEES_READ,
+  },
+  {
+    id: 'machines',
+    label: 'Machines',
+    path: ROUTES.MASTERS.MACHINES,
+    icon: Cog,
+    permission: PERMISSIONS.MACHINES_READ,
   },
   {
     id: 'payroll',

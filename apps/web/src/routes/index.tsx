@@ -18,6 +18,7 @@ const CompanySettingsForm = lazy(() => import('@/modules/settings').then(m => ({
 const ThemeSelector = lazy(() => import('@/modules/settings').then(m => ({ default: m.ThemeSelector })));
 const TablePreferencesPage = lazy(() => import('@/modules/settings').then(m => ({ default: m.TablePreferencesPage })));
 const EmployeeList = lazy(() => import('@/modules/masters/employees').then(m => ({ default: m.EmployeeList })));
+const MachineList = lazy(() => import('@/modules/masters/machines').then(m => ({ default: m.MachineList })));
 const ProductionList = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionList })));
 const ProductionEntry = lazy(() => import('@/modules/production').then(m => ({ default: m.ProductionEntry })));
 const ApprovalQueue = lazy(() => import('@/modules/production').then(m => ({ default: m.ApprovalQueue })));
@@ -78,6 +79,14 @@ export const router = createBrowserRouter([
         element: (
           <PermissionGuard permission={PERMISSIONS.EMPLOYEES_READ}>
             <EmployeeList />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: ROUTES.MASTERS.MACHINES,
+        element: (
+          <PermissionGuard permission={PERMISSIONS.MACHINES_READ}>
+            <MachineList />
           </PermissionGuard>
         ),
       },
