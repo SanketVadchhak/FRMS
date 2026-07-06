@@ -155,7 +155,7 @@ export function PayrollWorkspace() {
             <div className="min-w-0">
               <h3 className="text-xs font-medium text-muted-foreground truncate">Total Deductions</h3>
               <div className="text-lg font-bold mt-0.5 truncate">{isLoading ? '...' : formatCurrency(totalDeductions)}</div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Advances + Fines + Deductions</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Fines + Deductions</p>
             </div>
           </div>
 
@@ -166,7 +166,7 @@ export function PayrollWorkspace() {
             <div className="min-w-0">
               <h3 className="text-xs font-medium text-muted-foreground truncate">Salary Paid</h3>
               <div className="text-lg font-bold mt-0.5 truncate">{isLoading ? '...' : formatCurrency(totalPaid)}</div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Total Amount Paid</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Advances + Salary</p>
             </div>
           </div>
 
