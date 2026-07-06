@@ -2,8 +2,11 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
+import { useMobileKeyboardFix } from '@/hooks/useMobileKeyboardFix';
 
 export function AppLayout() {
+  useMobileKeyboardFix();
+  
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar: Icon-only on md (w-20), full width on lg (w-64) */}
