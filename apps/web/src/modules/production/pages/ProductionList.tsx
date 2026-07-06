@@ -55,7 +55,7 @@ export function ProductionList() {
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-[calc(100vh-80px)]">
+    <div className="space-y-4 flex flex-col min-h-full lg:h-[calc(100vh-80px)]">
       <PageHeader
         title="Production"
         description="Daily factory production logs"

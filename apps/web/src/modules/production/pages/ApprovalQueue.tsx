@@ -89,7 +89,7 @@ export function ApprovalQueue() {
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-[calc(100vh-80px)] pb-20">
+    <div className="space-y-4 flex flex-col min-h-full lg:h-[calc(100vh-80px)] pb-20">
       <div className="shrink-0 space-y-6">
         <PageHeader title="Approval Queue" description="Review and manage pending factory production" />
         <QueueStatistics />

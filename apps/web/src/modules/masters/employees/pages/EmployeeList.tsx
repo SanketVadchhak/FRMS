@@ -206,7 +206,7 @@ export function EmployeeList() {
       <Dialog.Root open={isFormOpen} onOpenChange={setIsFormOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-background p-6 shadow-lg duration-200 sm:rounded-xl animate-in zoom-in-95 border">
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-background p-6 shadow-lg duration-200 sm:rounded-xl animate-in zoom-in-95 border max-h-[90dvh] overflow-y-auto">
             <Dialog.Title className="text-lg font-semibold mb-4 tracking-tight">
               {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
             </Dialog.Title>

@@ -74,7 +74,7 @@ export function PayrollWorkspace() {
   const netRemaining = ledger.reduce((sum: number, r: any) => sum + r.closingBalance, 0);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] bg-background relative overflow-hidden">
+    <div className="flex flex-col min-h-full lg:h-[calc(100vh-80px)] bg-background relative overflow-hidden lg:overflow-visible">
       <div className="px-6 pt-6 pb-2 border-b flex-none">
         <div className="flex items-center justify-between mb-4">
           <div>

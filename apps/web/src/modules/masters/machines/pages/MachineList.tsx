@@ -169,7 +169,7 @@ export function MachineList() {
       <Dialog.Root open={isFormOpen} onOpenChange={setIsFormOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-xl bg-card p-6 shadow-xl border border-border z-50 animate-scale-in">
+          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-xl bg-card p-6 shadow-xl border border-border z-50 animate-scale-in max-h-[90dvh] overflow-y-auto">
             <Dialog.Title className="text-lg font-semibold text-foreground mb-1">
               {editingMachine ? 'Edit Machine' : 'Add New Machine'}
             </Dialog.Title>
