@@ -15,5 +15,9 @@ export async function payrollRoutes(fastify: FastifyInstance) {
   fastify.get<{ Params: { id: string } }>('/:id', { preHandler: [requirePermissions(['payroll:read'])] }, (req, res) => controller.get(req, res));
   fastify.post('/generate', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.generate(req, res));
   fastify.post('/batch', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.generateBatch(req, res));
+  fastify.get('/payments', { preHandler: [requirePermissions(['payroll:read'])] }, (req, res) => {
+    // Return empty array for now to resolve 404 until full payment module is built
+    return res.send({ success: true, message: 'Payments retrieved', data: [] });
+  });
   fastify.post<{ Params: { id: string } }>('/:id/pay', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.markAsPaid(req, res));
 }

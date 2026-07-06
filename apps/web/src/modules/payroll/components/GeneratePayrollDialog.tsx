@@ -145,19 +145,26 @@ export function GeneratePayrollDialog({ open, onOpenChange, defaultPeriodStart, 
               </div>
             )}
 
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-              <Dialog.Close asChild>
-                <button type="button" className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 mt-2 sm:mt-0">
-                  Cancel
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center pt-4">
+              <div className="text-sm text-destructive w-full sm:w-auto mb-4 sm:mb-0">
+                {generatePayrollBatch.isError && (
+                  <span>{generatePayrollBatch.error instanceof Error ? generatePayrollBatch.error.message : 'Failed to generate payroll'}</span>
+                )}
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row sm:space-x-2 w-full sm:w-auto">
+                <Dialog.Close asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 mt-2 sm:mt-0 w-full sm:w-auto">
+                    Cancel
+                  </button>
+                </Dialog.Close>
+                <button 
+                  onClick={handleGenerate}
+                  disabled={generatePayrollBatch.isPending || !preview || preview.totalEmployees === 0}
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
+                >
+                  {generatePayrollBatch.isPending ? 'Generating...' : 'Confirm Generation'}
                 </button>
-              </Dialog.Close>
-              <button 
-                onClick={handleGenerate}
-                disabled={generatePayrollBatch.isPending || !preview || preview.totalEmployees === 0}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-              >
-                {generatePayrollBatch.isPending ? 'Generating...' : 'Confirm Generation'}
-              </button>
+              </div>
             </div>
           </div>
           

@@ -43,11 +43,13 @@ export function usePayrollLedger(periodStart: string | null, periodEnd: string |
       
       // Add Payroll Generations
       empPayrolls.forEach((hp: any) => {
+        const pStart = hp.periodStart ? hp.periodStart.split('T')[0] : hp.payrollPeriodStart;
+        const pEnd = hp.periodEnd ? hp.periodEnd.split('T')[0] : hp.payrollPeriodEnd;
         rawTransactions.push({
           id: hp.id,
-          date: hp.payrollPeriodEnd, // Use end of period as transaction date
-          description: `Payroll Generated (${hp.payrollPeriodStart} to ${hp.payrollPeriodEnd})`,
-          amount: hp.grossPay, // Gross pay (Basic + Bonus)
+          date: pEnd, // Use end of period as transaction date
+          description: `Payroll Generated (${pStart} to ${pEnd})`,
+          amount: Number(hp.grossWage || hp.grossPay || 0), // Handle both Prisma model and API schema naming
           type: 'CREDIT'
         });
       });
@@ -107,7 +109,12 @@ export function usePayrollLedger(periodStart: string | null, periodEnd: string |
       });
       
       // Check if there is an already GENERATED payroll for this period
-      const generatedPayroll = empPayrolls.find((p: any) => p.payrollPeriodStart === periodStart && p.payrollPeriodEnd === periodEnd);
+      const generatedPayroll = empPayrolls.find((p: any) => {
+        // The API returns Prisma records which have periodStart/periodEnd as ISO strings
+        const pStart = p.periodStart ? p.periodStart.split('T')[0] : p.payrollPeriodStart;
+        const pEnd = p.periodEnd ? p.periodEnd.split('T')[0] : p.payrollPeriodEnd;
+        return pStart === periodStart && pEnd === periodEnd;
+      });
       
       let basicSalary = 0;
       let payrollBonus = 0;
