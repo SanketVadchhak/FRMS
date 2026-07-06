@@ -146,7 +146,7 @@ export function usePayrollLedger(periodStart: string | null, periodEnd: string |
           salaryPaid += amt;
         } else if (pay.type === PaymentType.ADVANCE || pay.type === PaymentType.LOAN) {
           advancesTaken += amt;
-          payrollDeductions += amt;
+          salaryPaid += amt; // Treat advances as prepaid salary
         } else if (pay.type === PaymentType.FINE) {
           finesIncurred += amt;
           payrollDeductions += amt;
