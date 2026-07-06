@@ -89,14 +89,14 @@ export class PayrollRepository {
         });
 
         // 2. Link any unpaid advances that match this employee and fall within this period
-        await tx.salaryAdvance.updateMany({
+        await tx.payment.updateMany({
           where: {
             employeeId: data.employeeId,
-            deducted: false,
+            status: 'PENDING',
             date: { lte: new Date(data.payrollPeriodEnd) }
           },
           data: {
-            deducted: true,
+            status: 'SETTLED',
             payrollId: payroll.id,
           },
         });
@@ -116,6 +116,56 @@ export class PayrollRepository {
         paymentMethod,
         paymentDate: new Date(),
         updatedBy,
+      },
+    });
+  }
+
+  // --- Payment Methods ---
+
+  async findAllPaymentsByCompany(companyId: string) {
+    return this.prisma.payment.findMany({
+      where: { companyId, deletedAt: null },
+      include: { employee: true },
+      orderBy: { date: 'desc' },
+    });
+  }
+
+  async createPayment(companyId: string, data: any, createdBy: string) {
+    return this.prisma.payment.create({
+      data: {
+        ...data,
+        companyId,
+        date: new Date(data.date),
+        createdBy,
+        updatedBy: createdBy,
+      },
+      include: { employee: true },
+    });
+  }
+
+  async updatePayment(companyId: string, id: string, data: any, updatedBy: string) {
+    if (data.date) {
+      data.date = new Date(data.date);
+    }
+    await this.prisma.payment.updateMany({
+      where: { id, companyId, deletedAt: null },
+      data: {
+        ...data,
+        updatedBy,
+      },
+    });
+    return this.prisma.payment.findFirst({
+      where: { id, companyId },
+      include: { employee: true },
+    });
+  }
+
+  async deletePayment(companyId: string, id: string, deletedBy: string) {
+    return this.prisma.payment.updateMany({
+      where: { id, companyId, deletedAt: null },
+      data: {
+        deletedAt: new Date(),
+        deletedBy,
       },
     });
   }

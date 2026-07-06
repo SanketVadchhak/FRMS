@@ -41,4 +41,32 @@ export class PayrollController {
     await this.service.markAsPaid(companyId, id, paymentMethod, username);
     return reply.send(successResponse('Payroll marked as paid'));
   }
+
+  // --- Payment Methods ---
+
+  async listPayments(request: FastifyRequest, reply: FastifyReply) {
+    const { companyId } = request.user;
+    const payments = await this.service.listPayments(companyId);
+    return reply.send(successResponse('Payments retrieved successfully', payments));
+  }
+
+  async createPayment(request: FastifyRequest, reply: FastifyReply) {
+    const { companyId, username } = request.user;
+    const payment = await this.service.createPayment(companyId, request.body, username);
+    return reply.status(201).send(successResponse('Payment created successfully', payment));
+  }
+
+  async updatePayment(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    const { companyId, username } = request.user;
+    const { id } = request.params;
+    const payment = await this.service.updatePayment(companyId, id, request.body, username);
+    return reply.send(successResponse('Payment updated successfully', payment));
+  }
+
+  async deletePayment(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    const { companyId, username } = request.user;
+    const { id } = request.params;
+    await this.service.deletePayment(companyId, id, username);
+    return reply.send(successResponse('Payment deleted successfully'));
+  }
 }

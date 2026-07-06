@@ -33,6 +33,7 @@ model Company {
   designs           Design[]
   productionEntries ProductionEntry[]
   payrolls          Payroll[]
+  payments          Payment[]
   roles             Role[]
   auditLogs         AuditLog[]
   notifications     Notification[]
@@ -186,7 +187,7 @@ model Employee {
 
   company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   productionEntries ProductionEntry[]
-  salaryAdvances    SalaryAdvance[]
+  payments          Payment[]
   payrolls          Payroll[]
 
   @@index([companyId])
@@ -305,14 +306,19 @@ model ProductionDetail {
 // Payroll & Finances
 // -----------------------------------------------------------------------------
 
-model SalaryAdvance {
-  id         String   @id @default(uuid())
-  employeeId String
-  amount     Decimal
-  date       DateTime
-  notes      String?
-  deducted   Boolean  @default(false)
-  payrollId  String?
+model Payment {
+  id              String   @id @default(uuid())
+  companyId       String
+  employeeId      String
+  amount          Decimal
+  date            DateTime
+  type            String   // ADVANCE | LOAN | ADJUSTMENT | BONUS_PAYMENT | FINE | SALARY | OTHER
+  effect          String   // ADDITION | DEDUCTION
+  method          String   @default("CASH") // CASH | BANK_TRANSFER | UPI | CHEQUE | OTHER
+  referenceNumber String?
+  reason          String?
+  status          String   @default("PENDING") // PENDING | SETTLED
+  payrollId       String?
 
   // Metadata
   createdAt DateTime  @default(now())
@@ -322,11 +328,13 @@ model SalaryAdvance {
   deletedAt DateTime?
   deletedBy String?
 
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   payroll  Payroll? @relation(fields: [payrollId], references: [id])
 
+  @@index([companyId])
   @@index([employeeId])
-  @@index([deducted])
+  @@index([status])
 }
 
 model Payroll {
@@ -356,7 +364,7 @@ model Payroll {
 
   company  Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employee Employee        @relation(fields: [employeeId], references: [id])
-  advances SalaryAdvance[]
+  payments Payment[]
 
   @@index([companyId])
   @@index([companyId, periodStart, periodEnd])

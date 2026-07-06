@@ -34,4 +34,26 @@ export class PayrollService {
     }
     await this.repo.markAsPaid(companyId, id, paymentMethod, updatedBy);
   }
+
+  // --- Payment Methods ---
+  
+  async listPayments(companyId: string) {
+    return this.repo.findAllPaymentsByCompany(companyId);
+  }
+
+  async createPayment(companyId: string, data: any, createdBy: string) {
+    return this.repo.createPayment(companyId, data, createdBy);
+  }
+
+  async updatePayment(companyId: string, id: string, data: any, updatedBy: string) {
+    const payment = await this.repo.updatePayment(companyId, id, data, updatedBy);
+    if (!payment) {
+      throw new NotFoundError('Payment');
+    }
+    return payment;
+  }
+
+  async deletePayment(companyId: string, id: string, deletedBy: string) {
+    await this.repo.deletePayment(companyId, id, deletedBy);
+  }
 }
