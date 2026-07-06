@@ -27,6 +27,13 @@ export class PayrollController {
     return reply.status(201).send(successResponse('Payroll generated successfully', payroll));
   }
 
+  async generateBatch(request: FastifyRequest, reply: FastifyReply) {
+    const { companyId, username } = request.user;
+    const input = z.array(payrollSchema).parse(request.body) as PayrollEntry[];
+    const count = await this.service.generateBatch(companyId, input, username);
+    return reply.status(201).send(successResponse('Batch payroll generated successfully', { count }));
+  }
+
   async markAsPaid(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const { companyId, username } = request.user;
     const { id } = request.params;

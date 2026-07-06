@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Calendar } from 'lucide-react';
-import { usePreviewPayroll, useGeneratePayroll } from '../hooks/usePayroll';
+import { useGeneratePayrollBatch } from '../hooks/usePayroll';
+import { usePayrollLedger } from '../hooks/usePayrollLedger';
 import { formatCurrency } from '@/utils/format';
 
 interface GeneratePayrollDialogProps {
@@ -23,12 +24,49 @@ export function GeneratePayrollDialog({ open, onOpenChange, defaultPeriodStart, 
     }
   }, [open, defaultPeriodStart, defaultPeriodEnd]);
 
-  const { data: preview, error, isLoading, isError } = usePreviewPayroll(periodStart, periodEnd);
-  const generatePayroll = useGeneratePayroll();
+  const { ledger, isLoading } = usePayrollLedger(periodStart, periodEnd);
+  
+  // Compute preview from ledger
+  const preview = {
+    totalEmployees: ledger.filter(l => !l.hasGeneratedPayroll).length,
+    totalHours: ledger.filter(l => !l.hasGeneratedPayroll).reduce((sum, l) => sum + l.totalHours, 0),
+    totalGross: ledger.filter(l => !l.hasGeneratedPayroll).reduce((sum, l) => sum + l.basicSalary + l.payrollBonus + l.payrollAdditions, 0),
+    totalDeductions: ledger.filter(l => !l.hasGeneratedPayroll).reduce((sum, l) => sum + l.payrollDeductions, 0),
+    totalNet: ledger.filter(l => !l.hasGeneratedPayroll).reduce((sum, l) => sum + l.netSalary, 0),
+  };
+
+  const generatePayrollBatch = useGeneratePayrollBatch();
 
   const handleGenerate = () => {
     if (!periodStart || !periodEnd) return;
-    generatePayroll.mutate({ start: periodStart, end: periodEnd, notes: '' }, {
+    
+    // Construct PayrollEntry[] from ledger for employees who don't already have generated payroll
+    const entriesToGenerate = ledger
+      .filter(l => !l.hasGeneratedPayroll)
+      .map(l => ({
+        payrollPeriodStart: periodStart,
+        payrollPeriodEnd: periodEnd,
+        employeeId: l.employeeId,
+        employeeName: l.employeeName,
+        hourlyRate: l.hourlyRate,
+        totalHours: l.totalHours,
+        basicWage: l.basicSalary,
+        bonus: l.payrollBonus,
+        totalAdditions: l.payrollAdditions,
+        totalDeductions: l.payrollDeductions,
+        grossPay: l.basicSalary + l.payrollBonus + l.payrollAdditions,
+        netPay: l.netSalary,
+        status: 'GENERATED' as import('@frms/shared').PayrollStatus,
+        productionEntryIds: [],
+        paymentIds: []
+      }));
+
+    if (entriesToGenerate.length === 0) {
+      onOpenChange(false);
+      return;
+    }
+
+    generatePayrollBatch.mutate(entriesToGenerate, {
       onSuccess: () => {
         onOpenChange(false);
       }
@@ -80,8 +118,6 @@ export function GeneratePayrollDialog({ open, onOpenChange, defaultPeriodStart, 
                 <h4 className="text-sm font-semibold mb-3">Payroll Preview</h4>
                 {isLoading ? (
                   <div className="text-sm text-muted-foreground py-4 text-center">Calculating payroll...</div>
-                ) : isError ? (
-                  <div className="text-sm text-destructive py-2">{error instanceof Error ? error.message : 'Error computing preview'}</div>
                 ) : preview ? (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -117,10 +153,10 @@ export function GeneratePayrollDialog({ open, onOpenChange, defaultPeriodStart, 
               </Dialog.Close>
               <button 
                 onClick={handleGenerate}
-                disabled={generatePayroll.isPending || !preview || isError}
+                disabled={generatePayrollBatch.isPending || !preview || preview.totalEmployees === 0}
                 className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
               >
-                {generatePayroll.isPending ? 'Generating...' : 'Confirm Generation'}
+                {generatePayrollBatch.isPending ? 'Generating...' : 'Confirm Generation'}
               </button>
             </div>
           </div>

@@ -23,6 +23,10 @@ export class PayrollService {
     return this.repo.generatePayroll(companyId, data, createdBy, []);
   }
 
+  async generateBatch(companyId: string, data: PayrollEntry[], createdBy: string) {
+    return this.repo.generateBatch(companyId, data, createdBy);
+  }
+
   async markAsPaid(companyId: string, id: string, paymentMethod: string, updatedBy: string) {
     const payroll = await this.repo.findById(companyId, id);
     if (!payroll) {

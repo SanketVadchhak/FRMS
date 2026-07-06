@@ -15,21 +15,12 @@ export function usePayrolls() {
   });
 }
 
-export function usePreviewPayroll(start: string, end: string) {
-  return useQuery({
-    queryKey: [...PAYROLL_KEYS.previews(), start, end],
-    queryFn: () => payrollService.previewPayroll(start, end),
-    enabled: Boolean(start && end),
-    retry: false, // Don't retry if it errors (e.g. overlap validation)
-  });
-}
-
-export function useGeneratePayroll() {
+export function useGeneratePayrollBatch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ start, end, notes }: { start: string; end: string; notes?: string }) => 
-      payrollService.generatePayroll(start, end, notes),
+    mutationFn: (entries: import('@frms/shared').PayrollEntry[]) => 
+      payrollService.generatePayrollBatch(entries),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PAYROLL_KEYS.lists() });
     },

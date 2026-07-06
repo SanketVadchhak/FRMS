@@ -14,5 +14,6 @@ export async function payrollRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [requirePermissions(['payroll:read'])] }, (req, res) => controller.list(req, res));
   fastify.get<{ Params: { id: string } }>('/:id', { preHandler: [requirePermissions(['payroll:read'])] }, (req, res) => controller.get(req, res));
   fastify.post('/generate', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.generate(req, res));
+  fastify.post('/batch', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.generateBatch(req, res));
   fastify.post<{ Params: { id: string } }>('/:id/pay', { preHandler: [requirePermissions(['payroll:write'])] }, (req, res) => controller.markAsPaid(req, res));
 }

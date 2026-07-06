@@ -39,7 +39,10 @@ export function formatNumber(num: number | string): string {
  */
 export function formatProductionDate(date: string): string {
   // Parse as local date to avoid UTC shift on date-only strings
-  const [year, month, day] = date.split('-');
+  const datePart = date.split('T')[0];
+  if (!datePart) return date;
+  
+  const [year, month, day] = datePart.split('-');
   if (!year || !month || !day) return date;
   return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year.slice(2)}`;
 }
