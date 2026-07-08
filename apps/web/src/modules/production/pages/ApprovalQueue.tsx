@@ -180,67 +180,86 @@ export function ApprovalQueue() {
             </table>
 
             {/* Mobile Layout Fallback */}
-            <div className="md:hidden divide-y">
-              {filteredEntries.map((entry) => {
-                const emp = employees.find((e: { id?: string; name: string }) => e.id === entry.employeeId);
-                const isSelected = selectedRows.has(entry.id!);
-                const canSelect = entry.status === ProductionStatus.PENDING;
+            <div className="md:hidden flex flex-col">
+              {/* Mobile Select All Bar */}
+              {pendingCount > 0 && (
+                <div className="p-4 flex items-center justify-between bg-muted/20 border-b border-border/50 sticky top-0 z-10 backdrop-blur">
+                  <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedRows.size === pendingCount}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    Select All Pending
+                  </label>
+                  <span className="text-xs text-muted-foreground">{pendingCount} pending</span>
+                </div>
+              )}
+              
+              <div className="divide-y">
+                {filteredEntries.map((entry) => {
+                  const emp = employees.find((e: { id?: string; name: string }) => e.id === entry.employeeId);
+                  const isSelected = selectedRows.has(entry.id!);
+                  const canSelect = entry.status === ProductionStatus.PENDING;
 
-                return (
-                  <div key={entry.id} className="p-4 flex gap-3 hover:bg-muted/30 transition-colors">
-                    {canSelect && (
-                      <div className="pt-1">
-                        <input 
-                          type="checkbox" 
-                          checked={isSelected}
-                          onChange={() => toggleRow(entry.id!)}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-semibold text-sm">{emp?.name ?? entry.employeeId}</p>
-                        </div>
-                        <StatusBadge status={entry.status} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-muted-foreground">Qty: </span>
-                          <span className="font-semibold">{entry.productionQuantity}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Hours: </span>
-                          <span className="font-semibold">{entry.hoursWorked}</span>
-                        </div>
-                        <div className="col-span-2 text-muted-foreground truncate">
-                          {entry.details?.map(d => d.designName).join(', ') || 'Unknown Design'}
-                        </div>
-                      </div>
-                      {entry.status === ProductionStatus.PENDING && (
-                        <div className="flex items-center gap-2 pt-2 border-t mt-2">
-                          <button 
-                            onClick={() => handleApprove(entry.id!)}
-                            disabled={approveMutation.isPending}
-                            className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium transition-colors"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Approve
-                          </button>
-                          <button 
-                            onClick={() => setRejectEntryId(entry.id!)}
-                            className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                            Reject
-                          </button>
+                  return (
+                    <div key={entry.id} className={cn("p-4 flex gap-3 transition-colors", isSelected ? "bg-primary/5" : "hover:bg-muted/30")}>
+                      {canSelect && (
+                        <div className="pt-1">
+                          <input 
+                            type="checkbox" 
+                            checked={isSelected}
+                            onChange={() => toggleRow(entry.id!)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
                         </div>
                       )}
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-semibold text-sm">{emp?.name ?? entry.employeeId}</p>
+                            <p className="text-xs text-muted-foreground">{formatProductionDateTime(entry.date)}</p>
+                          </div>
+                          <StatusBadge status={entry.status} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Qty: </span>
+                            <span className="font-semibold">{entry.productionQuantity}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Hours: </span>
+                            <span className="font-semibold">{entry.hoursWorked}</span>
+                          </div>
+                          <div className="col-span-2 text-muted-foreground truncate">
+                            {entry.details?.map(d => d.designName).filter(Boolean).join(', ') || 'No design details'}
+                          </div>
+                        </div>
+                        {entry.status === ProductionStatus.PENDING && (
+                          <div className="flex items-center gap-2 pt-2 border-t mt-2">
+                            <button 
+                              onClick={() => handleApprove(entry.id!)}
+                              disabled={approveMutation.isPending}
+                              className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium transition-colors disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Approve
+                            </button>
+                            <button 
+                              onClick={() => setRejectEntryId(entry.id!)}
+                              className="flex-1 inline-flex items-center justify-center gap-2 h-8 rounded border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors disabled:opacity-50"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -248,17 +267,16 @@ export function ApprovalQueue() {
 
       {/* Floating Bulk Action Bar */}
       {selectedCount > 0 && (
-        <div className="fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-5">
-          <div className="bg-foreground text-background px-6 py-3 rounded-full shadow-2xl flex items-center gap-4">
+        <div className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-5 w-[90%] max-w-md">
+          <div className="bg-foreground text-background px-4 md:px-6 py-3 rounded-full shadow-2xl flex items-center justify-between gap-4">
             <span className="text-sm font-medium whitespace-nowrap">{selectedCount} selected</span>
-            <div className="w-px h-4 bg-muted-foreground/30" />
             <button
               onClick={handleBulkApprove}
               disabled={bulkApproveMutation.isPending}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+              className="inline-flex shrink-0 items-center gap-2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
             >
               <CheckCircle2 className="h-4 w-4" />
-              Approve Selected
+              Approve All
             </button>
           </div>
         </div>
