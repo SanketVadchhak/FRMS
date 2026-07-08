@@ -18,6 +18,7 @@ export async function productionRoutes(fastify: FastifyInstance) {
   fastify.delete<{ Params: { id: string } }>('/:id', { preHandler: [requirePermissions(['production:delete'])] }, (req, res) => controller.delete(req, res));
   
   // Approvals
+  fastify.post('/bulk-approve', { preHandler: [requirePermissions(['production:approve'])] }, (req, res) => controller.bulkApprove(req, res));
   fastify.post<{ Params: { id: string } }>('/:id/approve', { preHandler: [requirePermissions(['production:approve'])] }, (req, res) => controller.approve(req, res));
   fastify.post<{ Params: { id: string } }>('/:id/reject', { preHandler: [requirePermissions(['production:approve'])] }, (req, res) => controller.reject(req, res));
 }

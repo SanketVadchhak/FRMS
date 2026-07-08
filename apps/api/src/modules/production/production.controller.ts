@@ -56,4 +56,11 @@ export class ProductionController {
     await this.service.rejectEntry(companyId, id, reason, username);
     return reply.send(successResponse('Production entry rejected'));
   }
+
+  async bulkApprove(request: FastifyRequest, reply: FastifyReply) {
+    const { companyId, username } = request.user;
+    const { ids } = z.object({ ids: z.array(z.string()).min(1) }).parse(request.body);
+    await this.service.bulkApproveEntries(companyId, ids, username);
+    return reply.send(successResponse('Production entries approved successfully'));
+  }
 }

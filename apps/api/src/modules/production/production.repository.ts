@@ -122,4 +122,16 @@ export class ProductionRepository {
       },
     });
   }
+
+  async bulkUpdateStatus(companyId: string, ids: string[], status: string, approvedBy: string) {
+    return this.prisma.productionEntry.updateMany({
+      where: { companyId, id: { in: ids }, deletedAt: null },
+      data: {
+        status,
+        approvedBy,
+        approvedAt: new Date(),
+        rejectionReason: null,
+      },
+    });
+  }
 }

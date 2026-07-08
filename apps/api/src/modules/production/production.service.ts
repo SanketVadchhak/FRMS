@@ -53,4 +53,9 @@ export class ProductionService {
     }
     await this.repo.updateStatus(companyId, id, 'REJECTED', reason, username);
   }
+
+  async bulkApproveEntries(companyId: string, ids: string[], username: string) {
+    if (!ids || ids.length === 0) return;
+    await this.repo.bulkUpdateStatus(companyId, ids, 'APPROVED', username);
+  }
 }
