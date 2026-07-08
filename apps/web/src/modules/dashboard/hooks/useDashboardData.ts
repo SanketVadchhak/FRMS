@@ -32,8 +32,8 @@ export function useDashboardData() {
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    const todayEntries = productionEntries.filter(e => e.date === todayStr);
-    const yesterdayEntries = productionEntries.filter(e => e.date === yesterdayStr);
+    const todayEntries = productionEntries.filter(e => e.date && e.date.split('T')[0] === todayStr);
+    const yesterdayEntries = productionEntries.filter(e => e.date && e.date.split('T')[0] === yesterdayStr);
     
     const todayVolume = todayEntries.reduce((sum, e) => sum + (e.productionQuantity || 0), 0);
     const yesterdayVolume = yesterdayEntries.reduce((sum, e) => sum + (e.productionQuantity || 0), 0);

@@ -13,7 +13,7 @@ export function ChartProductionTrend() {
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       
-      const dayEntries = productionEntries.filter(e => e.date === dateStr);
+      const dayEntries = productionEntries.filter(e => e.date && e.date.split('T')[0] === dateStr);
       const volume = dayEntries.reduce((sum, e) => sum + (e.productionQuantity || 0), 0);
       
       result.push({
