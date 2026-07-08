@@ -31,14 +31,14 @@ const productionEntryFormSchema = z.object({
       }),
     )
     .min(1, 'At least one production session is required'),
-  productionQuantity: z.number().min(0, 'Must be 0 or more'),
-  hoursWorked: z
+  productionQuantity: z.coerce.number().min(0, 'Must be 0 or more'),
+  hoursWorked: z.coerce
     .number({ invalid_type_error: 'Hours worked is required' })
     .min(0.5, 'Minimum 0.5 hours')
     .max(24, 'Maximum 24 hours'),
-  framesChanged: z.number().min(0),
-  threadBreakage: z.number().min(0),
-  bonus: z.number().min(0),
+  framesChanged: z.coerce.number().min(0),
+  threadBreakage: z.coerce.number().min(0),
+  bonus: z.coerce.number().min(0),
   notes: z.string().optional(),
 });
 
@@ -93,13 +93,13 @@ export function ProductionEntry() {
         } catch {
           // ignore
         }
-        return [{ designName: '', totalStitches: 0 }];
+        return [{ designName: '', totalStitches: '' as unknown as number }];
       })(),
-      productionQuantity: 0,
+      productionQuantity: '' as unknown as number,
       hoursWorked: 12,
-      framesChanged: 0,
-      threadBreakage: 0,
-      bonus: 0,
+      framesChanged: '' as unknown as number,
+      threadBreakage: '' as unknown as number,
+      bonus: '' as unknown as number,
       notes: '',
     },
   });
@@ -337,7 +337,7 @@ export function ProductionEntry() {
                       type="number"
                       inputMode="numeric"
                       min={0}
-                      {...register(`details.${index}.totalStitches`, { valueAsNumber: true })}
+                      {...register(`details.${index}.totalStitches`)}
                       className={inputClass}
                       placeholder="0"
                     />
@@ -357,7 +357,7 @@ export function ProductionEntry() {
           {fields.length < 5 && (
             <button
               type="button"
-              onClick={() => append({ designName: '', totalStitches: 0 })}
+              onClick={() => append({ designName: '', totalStitches: '' as unknown as number })}
               className="w-full flex items-center justify-center gap-2 h-10 border-2 border-dashed border-input rounded-lg text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
             >
               <Plus className="h-4 w-4" />
@@ -381,7 +381,7 @@ export function ProductionEntry() {
                 type="number"
                 inputMode="numeric"
                 min={0}
-                {...register('productionQuantity', { valueAsNumber: true })}
+                {...register('productionQuantity')}
                 className={`${inputClass} font-semibold text-emerald-600 dark:text-emerald-500`}
                 placeholder="0"
               />
@@ -401,7 +401,7 @@ export function ProductionEntry() {
                 step={0.5}
                 min={0.5}
                 max={24}
-                {...register('hoursWorked', { valueAsNumber: true })}
+                {...register('hoursWorked')}
                 className={`${inputClass} font-semibold`}
                 placeholder="e.g. 8"
               />
@@ -425,7 +425,7 @@ export function ProductionEntry() {
                 type="number"
                 inputMode="numeric"
                 min={0}
-                {...register('framesChanged', { valueAsNumber: true })}
+                {...register('framesChanged')}
                 className={inputClass}
                 placeholder="0"
               />
@@ -437,7 +437,7 @@ export function ProductionEntry() {
                 type="number"
                 inputMode="numeric"
                 min={0}
-                {...register('threadBreakage', { valueAsNumber: true })}
+                {...register('threadBreakage')}
                 className={inputClass}
                 placeholder="0"
               />
@@ -449,7 +449,7 @@ export function ProductionEntry() {
                 type="number"
                 inputMode="numeric"
                 min={0}
-                {...register('bonus', { valueAsNumber: true })}
+                {...register('bonus')}
                 className={inputClass}
                 placeholder="0.00"
               />

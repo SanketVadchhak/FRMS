@@ -95,12 +95,12 @@ export function usePayrollLedger(periodStart: string | null, periodEnd: string |
       const currentProd = periodProductions.filter((p: any) => p.employeeId === emp.id);
       
       // Calculate Live Production metrics
-      let totalHours = 0;
+      let computedTotalHours = 0;
       let productionQty = 0;
       let productionBonus = 0;
       
       currentProd.forEach((prod: any) => {
-        totalHours += Number(prod.hoursWorked) || 0;
+        computedTotalHours += Number(prod.hoursWorked) || 0;
         
         prod.details.forEach((d: any) => {
           productionQty += Number(d.totalStitches) || 0;
@@ -119,14 +119,17 @@ export function usePayrollLedger(periodStart: string | null, periodEnd: string |
       let basicSalary = 0;
       let payrollBonus = 0;
       let hourlyRate = 0;
+      let totalHours = 0;
       
       if (generatedPayroll) {
-        hourlyRate = Number(generatedPayroll.hourlyRate) || 0;
+        // Fallback to current employee rate and computed hours if not present on the generated payroll record (schema lacks these fields)
+        hourlyRate = Number(generatedPayroll.hourlyRate) || Number(emp.hourlyRate) || 0;
         basicSalary = Number(generatedPayroll.basicWage) || 0;
         payrollBonus = Number(generatedPayroll.bonus) || 0;
-        totalHours = Number(generatedPayroll.totalHours) || 0; // Use frozen hours
+        totalHours = Number(generatedPayroll.totalHours) || computedTotalHours; 
       } else {
         hourlyRate = Number(emp.hourlyRate) || 0;
+        totalHours = computedTotalHours;
         basicSalary = totalHours * hourlyRate;
         payrollBonus = productionBonus;
       }
