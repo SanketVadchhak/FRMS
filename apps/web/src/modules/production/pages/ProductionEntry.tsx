@@ -337,7 +337,7 @@ export function ProductionEntry() {
             <p className={errorClass}>{errors.details.root.message}</p>
           )}
 
-          {fields.length < 2 && (
+          {fields.length < 5 && (
             <button
               type="button"
               onClick={() => append({ designName: '', totalStitches: 0 })}
@@ -452,7 +452,7 @@ export function ProductionEntry() {
       </div>
 
       {/* ── Sticky Action Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-20 lg:left-64 z-40 bg-background/90 backdrop-blur-xl border-t p-4 flex justify-end gap-3 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-20 lg:left-64 z-40 bg-background/90 backdrop-blur-xl border-t p-4 flex justify-end gap-3 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
         <button
           type="button"
           onClick={handleCancel}
