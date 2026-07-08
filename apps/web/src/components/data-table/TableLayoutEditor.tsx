@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { ColumnDef, TableLayout } from '@/hooks/useColumnPreferences';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -76,8 +76,8 @@ function SortableRow<TData = unknown, TContext = unknown>({
         {...attributes}
         {...listeners}
         className={cn(
-          'flex-shrink-0 text-muted-foreground/50 hover:text-muted-foreground transition-colors',
-          isFixed ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing',
+          'flex-shrink-0 text-muted-foreground/50 hover:text-muted-foreground transition-colors p-2 -ml-2 rounded-lg',
+          isFixed ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing hover:bg-muted/50 touch-none',
         )}
         title={isFixed ? 'This column cannot be moved' : 'Drag to reorder'}
       >
@@ -184,7 +184,8 @@ export function TableLayoutEditor<TData = unknown, TContext = unknown>({
   const [search, setSearch] = useState('');
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
