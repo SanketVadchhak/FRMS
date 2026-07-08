@@ -76,57 +76,56 @@ export function PayrollWorkspace() {
   return (
     <div className="flex flex-col min-h-full lg:h-[calc(100vh-80px)] bg-background relative overflow-hidden lg:overflow-visible">
       <div className="px-6 pt-6 pb-2 border-b flex-none">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Payroll Workspace</h1>
             <p className="text-sm text-muted-foreground">Employee-centric ledger and payroll management.</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2 bg-muted/50 p-1 rounded-md border">
-              <span className="text-xs font-medium text-muted-foreground px-2">Period:</span>
+          <div className="flex items-center self-start lg:self-auto overflow-x-auto w-full lg:w-auto pb-1 hide-scrollbar">
+            <div className="flex items-center space-x-2 bg-muted/50 p-1 rounded-md border shrink-0">
+              <span className="text-xs font-medium text-muted-foreground px-2 hidden sm:inline">Period:</span>
               <input 
                 type="date"
                 value={periodStart}
                 onChange={e => setPeriodStart(e.target.value)}
-                className="text-sm bg-transparent border-none focus:ring-0 p-1 w-32"
+                className="text-sm bg-transparent border-none focus:ring-0 p-1 w-[120px] sm:w-32"
               />
               <span className="text-muted-foreground">-</span>
               <input 
                 type="date"
                 value={periodEnd}
                 onChange={e => setPeriodEnd(e.target.value)}
-                className="text-sm bg-transparent border-none focus:ring-0 p-1 w-32"
+                className="text-sm bg-transparent border-none focus:ring-0 p-1 w-[120px] sm:w-32"
               />
             </div>
           </div>
         </div>
         
         {/* Action Bar */}
-        <div className="flex flex-wrap items-center gap-2 pb-4">
-          <button onClick={() => setIsGenerateOpen(true)} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2">
+        <div className="flex overflow-x-auto items-center gap-2 pb-4 hide-scrollbar">
+          <button onClick={() => setIsGenerateOpen(true)} className="inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2">
             <Receipt className="w-4 h-4 mr-2" /> Generate Payroll
           </button>
-          <button onClick={() => { setRecordAdvanceEmpId(undefined); setIsAdvanceOpen(true); }} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+          <button onClick={() => { setRecordAdvanceEmpId(undefined); setIsAdvanceOpen(true); }} className="inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
             <Plus className="w-4 h-4 mr-2" /> Record Advance
           </button>
-          <button onClick={() => { setRecordFineEmpId(undefined); setIsFineOpen(true); }} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+          <button onClick={() => { setRecordFineEmpId(undefined); setIsFineOpen(true); }} className="inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
             <ShieldAlert className="w-4 h-4 mr-2" /> Record Fine
           </button>
-          <button onClick={() => { setRecordAdjEmpId(undefined); setIsAdjustmentOpen(true); }} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+          <button onClick={() => { setRecordAdjEmpId(undefined); setIsAdjustmentOpen(true); }} className="inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
             <ArrowDownUp className="w-4 h-4 mr-2" /> Record Adjustment
           </button>
-          <div className="flex-1"></div>
-          <button onClick={handleExport} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+          <div className="flex-1 hidden md:block"></div>
+          <button onClick={handleExport} className="inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
             <FileDown className="w-4 h-4 mr-2" /> Export CSV
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
         {/* Summary Cards */}
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex items-center gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 md:p-4 flex items-center gap-3 col-span-2 lg:col-span-1">
             <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
               <Users className="h-5 w-5 text-blue-600" />
             </div>
@@ -148,7 +147,7 @@ export function PayrollWorkspace() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex items-center gap-3">
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 md:p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
               <ArrowDown className="h-5 w-5 text-orange-600" />
             </div>
@@ -159,7 +158,7 @@ export function PayrollWorkspace() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex items-center gap-3">
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 md:p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
               <Wallet className="h-5 w-5 text-purple-600" />
             </div>
@@ -170,7 +169,7 @@ export function PayrollWorkspace() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex items-center gap-3">
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 md:p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
               <Wallet className="h-5 w-5 text-red-600" />
             </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PageHeader } from '@/components';
@@ -77,6 +77,7 @@ export function ProductionEntry() {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<ProductionEntryFormValues>({
     resolver: zodResolver(productionEntryFormSchema),
@@ -132,6 +133,22 @@ export function ProductionEntry() {
       }
     }
   }, [isEditing, id, entries, reset]);
+
+  // Auto-select last used machine for the selected employee
+  const selectedEmployeeId = useWatch({ control, name: 'employeeId' });
+  
+  useEffect(() => {
+    if (!isEditing && selectedEmployeeId && entries && entries.length > 0) {
+      // Entries are already sorted by date desc from backend
+      const lastEntry = entries.find((e) => e.employeeId === selectedEmployeeId);
+      if (lastEntry && lastEntry.machineId) {
+        setValue('machineId', lastEntry.machineId, { 
+          shouldDirty: true,
+          shouldValidate: true 
+        });
+      }
+    }
+  }, [selectedEmployeeId, isEditing, entries, setValue]);
 
   const handleCancel = () => {
     if (isDirty && !window.confirm('You have unsaved changes. Leave anyway?')) return;

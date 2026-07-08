@@ -145,7 +145,7 @@ export function AttendanceCalendarDialog({ employee, isOpen, onClose }: Attendan
               const isInactive = employee.status === 'INACTIVE';
               
               // Find attendance record for this day
-              const record = attendanceRecords?.find(r => r.date === dayObj.dateString);
+              const record = attendanceRecords?.find(r => r.date && r.date.split('T')[0] === dayObj.dateString);
               const isPresent = record?.status === AttendanceStatus.PRESENT;
 
               // Apply colors:
