@@ -39,6 +39,7 @@ const productionEntryFormSchema = z.object({
   framesChanged: z.coerce.number().min(0),
   threadBreakage: z.coerce.number().min(0),
   bonus: z.coerce.number().min(0),
+  upadAmount: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
 });
 
@@ -100,6 +101,7 @@ export function ProductionEntry() {
       framesChanged: '' as unknown as number,
       threadBreakage: '' as unknown as number,
       bonus: '' as unknown as number,
+      upadAmount: '' as unknown as number,
       notes: '',
     },
   });
@@ -464,6 +466,33 @@ export function ProductionEntry() {
               className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-colors min-h-[80px] resize-none placeholder:text-muted-foreground"
               placeholder="Add any shift remarks…"
             />
+          </div>
+        </section>
+
+        {/* ── 5. Upad (Daily Advance) ── */}
+        <section className="bg-card border rounded-xl p-4 md:p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              5 · Upad / Daily Advance
+            </h2>
+            <span className="text-xs text-muted-foreground font-medium px-2 py-0.5 rounded-full bg-muted border">Optional</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="upadAmount" className={labelClass}>Amount (₹)</label>
+              <input
+                id="upadAmount"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                {...register('upadAmount')}
+                className={`${inputClass} font-semibold text-primary`}
+                placeholder="e.g. 200"
+              />
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                This will automatically record a daily advance payment for the employee.
+              </p>
+            </div>
           </div>
         </section>
       </div>

@@ -42,6 +42,7 @@ export const productionEntrySchema = z.object({
   framesChanged: z.number().min(0).default(0),
   threadBreakage: z.number().min(0).default(0),
   bonus: z.number().min(0).default(0),
+  upadAmount: z.number().min(0).optional(),
 
   // Plain text notes — no JSON serialisation
   notes: z.string().optional(),

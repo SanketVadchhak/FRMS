@@ -58,6 +58,24 @@ export class ProductionRepository {
         },
       });
 
+      // Automatically create a Payment record for Upad (Daily Advance) if provided
+      if (data.upadAmount && data.upadAmount > 0) {
+        await tx.payment.create({
+          data: {
+            companyId,
+            employeeId: data.employeeId,
+            date: new Date(data.date),
+            amount: data.upadAmount,
+            type: 'ADVANCE',
+            effect: 'DEDUCTION',
+            status: 'PENDING',
+            reason: 'Daily Upad - Auto-generated from Production Entry',
+            createdBy,
+            updatedBy: createdBy,
+          }
+        });
+      }
+
       return entry;
     });
   }
