@@ -130,6 +130,7 @@ export function ProductionEntry() {
           framesChanged: entry.framesChanged ?? 0,
           threadBreakage: entry.threadBreakage ?? 0,
           bonus: entry.bonus ?? 0,
+          upadAmount: entry.upadAmount ?? ('' as unknown as number),
           notes: entry.notes ?? '',
         });
       }
@@ -172,6 +173,7 @@ export function ProductionEntry() {
       framesChanged: data.framesChanged,
       threadBreakage: data.threadBreakage,
       bonus: data.bonus,
+      upadAmount: data.upadAmount,
       notes: data.notes ?? '',
       status,
       rejectionReason: undefined,
@@ -507,26 +509,45 @@ export function ProductionEntry() {
         >
           Cancel
         </button>
-        <button
-          type="button"
-          onClick={() => handleSave(ProductionStatus.DRAFT)}
-          disabled={isBusy}
-          className="flex-1 md:flex-none px-5 py-2.5 rounded-lg border border-primary/20 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
-        >
-          {isBusy && submitStatus === ProductionStatus.DRAFT
-            ? 'Saving…'
-            : 'Save Draft'}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleSave(ProductionStatus.PENDING)}
-          disabled={isBusy}
-          className="flex-1 md:flex-none px-7 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
-        >
-          {isBusy && submitStatus === ProductionStatus.PENDING
-            ? 'Submitting…'
-            : 'Submit'}
-        </button>
+
+        {isEditing && entries?.find(e => e.id === id)?.status === ProductionStatus.APPROVED ? (
+          <button
+            type="button"
+            onClick={() => handleSave(ProductionStatus.APPROVED)}
+            disabled={isBusy}
+            className="flex-1 md:flex-none px-7 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {isBusy && submitStatus === ProductionStatus.APPROVED ? 'Saving…' : 'Update Approved Record'}
+          </button>
+        ) : isEditing && entries?.find(e => e.id === id)?.status === ProductionStatus.REJECTED ? (
+          <button
+            type="button"
+            onClick={() => handleSave(ProductionStatus.PENDING)}
+            disabled={isBusy}
+            className="flex-1 md:flex-none px-7 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {isBusy && submitStatus === ProductionStatus.PENDING ? 'Resubmitting…' : 'Fix & Resubmit'}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => handleSave(ProductionStatus.DRAFT)}
+              disabled={isBusy}
+              className="flex-1 md:flex-none px-5 py-2.5 rounded-lg border border-primary/20 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+            >
+              {isBusy && submitStatus === ProductionStatus.DRAFT ? 'Saving…' : 'Save Draft'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSave(ProductionStatus.PENDING)}
+              disabled={isBusy}
+              className="flex-1 md:flex-none px-7 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+            >
+              {isBusy && submitStatus === ProductionStatus.PENDING ? 'Submitting…' : 'Submit'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

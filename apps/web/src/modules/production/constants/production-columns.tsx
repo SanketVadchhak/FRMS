@@ -3,8 +3,9 @@ import type { ProductionEntry } from '@frms/shared';
 import { ProductionStatus } from '@frms/shared';
 import { Tooltip } from '@/components';
 import { StatusBadge } from '@/components/feedback/StatusBadge';
-import { MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
+import { MessageSquare, CheckCircle2, XCircle, Edit2, RefreshCw } from 'lucide-react';
 import { formatProductionDate } from '@/utils';
+import { cn } from '@/utils/cn';
 
 export interface TableContext {
   employees: { id?: string; name: string }[];
@@ -145,6 +146,13 @@ export const PRODUCTION_COLUMNS: ProductionColumnDef[] = [
     render: (entry) => entry.bonus > 0 ? `₹${entry.bonus}` : '—'
   },
   { 
+    id: 'upadAmount', 
+    label: 'Upad / Advance', 
+    defaultVisible: true,
+    renderHeader: () => 'Upad',
+    render: (entry) => (entry.upadAmount && entry.upadAmount > 0) ? <span className="text-destructive font-medium">₹{entry.upadAmount}</span> : '—'
+  },
+  { 
     id: 'notes', 
     label: 'Notes', 
     defaultVisible: true,
@@ -209,14 +217,21 @@ export const PRODUCTION_COLUMNS: ProductionColumnDef[] = [
               onClick={() => ctx.handleApprove?.(entry.id!)}
               disabled={ctx.isApproving}
               title="Approve"
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-colors disabled:opacity-50"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-colors disabled:opacity-50 shadow-sm"
             >
               <CheckCircle2 className="h-4 w-4" />
             </button>
             <button 
+              onClick={() => ctx.navigate?.(`/production/${entry.id}`)}
+              title="Edit Entry"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors disabled:opacity-50 shadow-sm"
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+            </button>
+            <button 
               onClick={() => ctx.setRejectEntryId?.(entry.id!)}
               title="Reject"
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-50"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-50 shadow-sm"
             >
               <XCircle className="h-4 w-4" />
             </button>
@@ -224,19 +239,30 @@ export const PRODUCTION_COLUMNS: ProductionColumnDef[] = [
         );
       }
 
-      if (!ctx.isApprovalQueue && (entry.status === ProductionStatus.DRAFT || entry.status === ProductionStatus.REJECTED)) {
-        return (
-          <button 
-            onClick={() => ctx.navigate?.(`/production/edit/${entry.id}`)}
-            className="inline-flex items-center justify-center h-8 px-3 rounded-md border bg-background hover:bg-muted text-xs font-medium transition-colors whitespace-nowrap mx-auto"
-          >
-            {/* Note: In a real app we'd import Edit, but to keep dependencies clean here we just render text or simple SVG */}
-            {entry.status === ProductionStatus.REJECTED ? 'Fix & Resubmit' : 'Edit'}
-          </button>
-        );
-      }
-
-      return <span className="text-muted-foreground text-xs">—</span>;
+      // Always allow editing for other statuses, or in Production List
+      return (
+        <button 
+          onClick={() => ctx.navigate?.(`/production/${entry.id}`)}
+          className={cn(
+            "inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border text-xs font-medium transition-all shadow-sm whitespace-nowrap mx-auto",
+            entry.status === ProductionStatus.REJECTED
+              ? "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700"
+              : "bg-background hover:bg-muted text-foreground"
+          )}
+        >
+          {entry.status === ProductionStatus.REJECTED ? (
+            <>
+              <RefreshCw className="h-3.5 w-3.5" />
+              Fix & Resubmit
+            </>
+          ) : (
+            <>
+              <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
+              Edit
+            </>
+          )}
+        </button>
+      );
     }
   }
 ];

@@ -253,6 +253,7 @@ model ProductionEntry {
   framesChanged  Int      @default(0)
   threadBreakage Int      @default(0)
   bonus          Decimal  @default(0)
+  upadAmount     Decimal  @default(0)
   notes          String?
   
   // Aggregate metrics & workflow

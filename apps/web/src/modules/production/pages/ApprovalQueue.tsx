@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Factory, CheckCircle2, XCircle } from 'lucide-react';
 import { PageHeader, SectionCard, StatusBadge } from '@/components';
 import { EmptyState } from '@/components/feedback/EmptyState';
@@ -72,6 +73,8 @@ export function ApprovalQueue() {
   const totalQty = filteredEntries.reduce((acc, e) => acc + (e.productionQuantity || 0), 0);
   const totalHours = filteredEntries.reduce((acc, e) => acc + (e.hoursWorked || 0), 0);
 
+  const navigate = useNavigate();
+
   const tableContext: TableContext = {
     employees,
     formatDateTime: formatProductionDateTime,
@@ -85,7 +88,8 @@ export function ApprovalQueue() {
     handleApprove,
     setRejectEntryId,
     isApproving: approveMutation.isPending,
-    isApprovalQueue: true
+    isApprovalQueue: true,
+    navigate
   };
 
   return (
@@ -161,7 +165,7 @@ export function ApprovalQueue() {
                         const col = APPROVAL_QUEUE_COLUMNS.find(c => c.id === colId);
                         if (!col) return null;
                         
-                        const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches'].includes(colId);
+                        const isNumber = ['qty', 'hours', 'frames', 'thread_breaks', 'bonus', 'total_stitches', 'upadAmount'].includes(colId);
                         const isCenter = ['status', 'actions', 'notes', 'checkbox'].includes(colId);
 
                         return (
